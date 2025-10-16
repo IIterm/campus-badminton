@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽毛球组局 - 结束球局</title>
+    <link rel="stylesheet" href="common-styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', 'Inter', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .settlement-container {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #ddd;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* 球局信息卡片 */
+        .game-info {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .game-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .game-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* 费用输入区域 */
+        .cost-input-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #333;
+            background: #ffffff;
+            transition: all 0.2s ease-out;
+            outline: none;
+            min-height: 44px;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.30);
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .form-group input[type="number"] {
+            padding-left: 35px;
+        }
+
+        /* 参与人员信息 */
+        .participants-info {
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .participants-count {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* 费用汇总 */
+        .cost-summary {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .cost-summary h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 2px solid #f8f9fa;
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .per-person {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 警告提示 */
+        .warning-notice {
+            background: #fff8f0;
+            border: 2px solid #ff6b6b;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .warning-icon {
+            color: #ff6b6b;
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .warning-content {
+            flex: 1;
+        }
+
+        .warning-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ff6b6b;
+            margin-bottom: 4px;
+        }
+
+        .warning-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* 按钮样式 */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #ddd;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ff6b6b;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .modal-content {
+            margin-bottom: 24px;
+        }
+
+        .modal-text {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            text-align: center;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-btn.cancel {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #ddd;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #e9ecef;
+        }
+
+        .modal-btn.confirm {
+            background: #ffffff;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+        }
+
+        .modal-btn.confirm:hover {
+            background: #fff5f5;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.20);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .settlement-container {
+                padding: 24px;
+                margin: 16px;
+            }
+            
+            .game-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .modal {
+                padding: 24px;
+                margin: 16px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* 加载状态 */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="settlement-container">
+        <div class="header">
+            <h1 class="title">结束球局</h1>
+            <p class="subtitle">请确认费用信息并结算</p>
+        </div>
+
+        <!-- 球局信息卡片 -->
+        <div class="game-info">
+            <h3>球局信息</h3>
+            <div class="game-details">
+                <div class="detail-item">
+                    <span class="detail-label">球局时间</span>
+                    <span class="detail-value" id="gameTime">2024-01-15 19:00-21:00</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">球场地点</span>
+                    <span class="detail-value" id="gameLocation">体育中心羽毛球馆</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">球局类型</span>
+                    <span class="detail-value" id="gameType">混合双打</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">创建者</span>
+                    <span class="detail-value" id="gameCreator">张三</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参与人员信息 -->
+        <div class="participants-info">
+            <div class="participants-count">
+                参与人数：<span id="participantCount">4</span> 人
+            </div>
+        </div>
+
+        <!-- 费用输入区域 -->
+        <div class="cost-input-section">
+            <h3 class="section-title">费用信息</h3>
+            
+            <div class="form-group">
+                <label for="venueCost">场地费用</label>
+                <div class="currency-symbol">¥</div>
+                <input type="number" id="venueCost" placeholder="请输入场地费用" min="0" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label for="shuttlecockCost">羽毛球费用</label>
+                <div class="currency-symbol">¥</div>
+                <input type="number" id="shuttlecockCost" placeholder="请输入羽毛球费用" min="0" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label for="otherCost">其他费用</label>
+                <div class="currency-symbol">¥</div>
+                <input type="number" id="otherCost" placeholder="请输入其他费用（可选）" min="0" step="0.01">
+            </div>
+        </div>
+
+        <!-- 费用汇总 -->
+        <div class="cost-summary">
+            <h3>费用汇总</h3>
+            <div class="summary-row">
+                <span>场地费用</span>
+                <span id="summaryVenue">¥0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>羽毛球费用</span>
+                <span id="summaryShuttlecock">¥0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>其他费用</span>
+                <span id="summaryOther">¥0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>总费用</span>
+                <span id="totalCost">¥0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>人均费用</span>
+                <span id="perPersonCost">¥0.00 <span class="per-person">/ 人</span></span>
+            </div>
+        </div>
+
+        <!-- 警告提示 -->
+        <div class="warning-notice">
+            <div class="warning-icon">⚠</div>
+            <div class="warning-content">
+                <div class="warning-title">重要提醒</div>
+                <div class="warning-text">
+                    结束球局后将无法修改费用信息，请仔细核对后再确认。系统将自动计算每人应付金额并发送通知。
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="goBack()">
+                返回球局
+            </button>
+            <button class="btn btn-danger" onclick="showConfirmModal()" id="endGameBtn">
+                确认结束球局
+            </button>
+        </div>
+    </div>
+
+    <!-- 确认模态框 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">确认结束球局</h2>
+                <p class="modal-subtitle">此操作不可撤销</p>
+            </div>
+            <div class="modal-content">
+                <p class="modal-text">
+                    您确定要结束这场球局吗？<br>
+                    总费用：<strong id="modalTotalCost">¥0.00</strong><br>
+                    人均费用：<strong id="modalPerPersonCost">¥0.00</strong><br><br>
+                    结束后将自动发送费用分摊通知给所有参与者。
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="hideConfirmModal()">
+                    取消
+                </button>
+                <button class="modal-btn confirm" onclick="confirmEndGame()" id="confirmBtn">
+                    确认结束
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 费用计算
+        function calculateCosts() {
+            const venueCost = parseFloat(document.getElementById('venueCost').value) || 0;
+            const shuttlecockCost = parseFloat(document.getElementById('shuttlecockCost').value) || 0;
+            const otherCost = parseFloat(document.getElementById('otherCost').value) || 0;
+            const participantCount = parseInt(document.getElementById('participantCount').textContent) || 1;
+
+            const totalCost = venueCost + shuttlecockCost + otherCost;
+            const perPersonCost = totalCost / participantCount;
+
+            // 更新汇总显示
+            document.getElementById('summaryVenue').textContent = `¥${venueCost.toFixed(2)}`;
+            document.getElementById('summaryShuttlecock').textContent = `¥${shuttlecockCost.toFixed(2)}`;
+            document.getElementById('summaryOther').textContent = `¥${otherCost.toFixed(2)}`;
+            document.getElementById('totalCost').textContent = `¥${totalCost.toFixed(2)}`;
+            document.getElementById('perPersonCost').innerHTML = `¥${perPersonCost.toFixed(2)} <span class="per-person">/ 人</span>`;
+
+            // 更新模态框中的费用显示
+            document.getElementById('modalTotalCost').textContent = `¥${totalCost.toFixed(2)}`;
+            document.getElementById('modalPerPersonCost').textContent = `¥${perPersonCost.toFixed(2)}`;
+        }
+
+        // 绑定输入事件
+        document.getElementById('venueCost').addEventListener('input', calculateCosts);
+        document.getElementById('shuttlecockCost').addEventListener('input', calculateCosts);
+        document.getElementById('otherCost').addEventListener('input', calculateCosts);
+
+        // 显示确认模态框
+        function showConfirmModal() {
+            const totalCost = parseFloat(document.getElementById('totalCost').textContent.replace('¥', ''));
+            
+            if (totalCost <= 0) {
+                alert('请先输入费用信息');
+                return;
+            }
+
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        // 隐藏确认模态框
+        function hideConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // 返回球局
+        function goBack() {
+            if (confirm('确定要返回吗？未保存的费用信息将丢失。')) {
+                window.history.back();
+            }
+        }
+
+        // 确认结束球局
+        function confirmEndGame() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            const endGameBtn = document.getElementById('endGameBtn');
+            
+            // 显示加载状态
+            confirmBtn.disabled = true;
+            endGameBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="loading"></span> 处理中...';
+
+            // 模拟处理过程
+            setTimeout(() => {
+                alert('球局已成功结束！费用分摊通知已发送给所有参与者。');
+                // 跳转到球局结算页面
+                window.location.href = 'game-settlement.html';
+            }, 2000);
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideConfirmModal();
+            }
+        });
+
+        // 键盘事件处理
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideConfirmModal();
+            }
+        });
+
+        // 初始化计算
+        calculateCosts();
+    </script>
+</body>
+</html>

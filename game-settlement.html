@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽毛球组局 - 球局结算</title>
+    <link rel="stylesheet" href="common-styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', 'Inter', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .settlement-container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* 球局信息卡片 */
+        .game-info-card {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .game-info-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .game-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* 参与者选择卡片 */
+        .participants-card {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .participants-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .required {
+            color: #ff6b6b;
+            font-size: 16px;
+        }
+
+        .selection-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .participants-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            min-height: 44px;
+        }
+
+        .participant-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .participant-item.selected {
+            border-color: #667eea;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.30);
+        }
+
+        .participant-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease-out;
+            flex-shrink: 0;
+        }
+
+        .participant-item.selected .participant-checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .participant-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
+
+        .participant-item.selected .participant-checkbox::after {
+            opacity: 1;
+        }
+
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .participant-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .participant-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .participant-level {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .selection-summary {
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .summary-text {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* 费用汇总卡片 */
+        .cost-summary-card {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .cost-summary-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .cost-breakdown {
+            margin-bottom: 16px;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .cost-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 2px solid #f8f9fa;
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .cost-label {
+            font-weight: 500;
+        }
+
+        .cost-value {
+            font-weight: 600;
+        }
+
+        .per-person-note {
+            font-size: 14px;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        /* 分摊详情 */
+        .split-details {
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .split-details h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .split-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .split-item:last-child {
+            border-bottom: none;
+        }
+
+        .split-participant {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .split-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .split-name {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .split-amount {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .settlement-container {
+                max-width: 100%;
+            }
+
+            .game-info-card,
+            .participants-card,
+            .cost-summary-card {
+                padding: 20px;
+            }
+
+            .game-details {
+                grid-template-columns: 1fr;
+            }
+
+            .participants-list {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-info-card,
+            .participants-card,
+            .cost-summary-card {
+                padding: 16px;
+            }
+
+            .participant-item {
+                padding: 12px;
+            }
+
+            .participant-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 提示信息 */
+        .info-notice {
+            background: #f0f8ff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-icon {
+            color: #667eea;
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="settlement-container">
+        <div class="header">
+            <h1 class="title">球局结算</h1>
+            <p class="subtitle">选择实际参与者并确认费用分摊</p>
+        </div>
+
+        <!-- 球局信息卡片 -->
+        <div class="game-info-card">
+            <h3>球局信息</h3>
+            <div class="game-details">
+                <div class="detail-item">
+                    <span class="detail-label">球局时间</span>
+                    <span class="detail-value" id="gameTime">2024-01-15 19:00-21:00</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">球场地点</span>
+                    <span class="detail-value" id="gameLocation">体育中心羽毛球馆</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">球局类型</span>
+                    <span class="detail-value" id="gameType">混合双打</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">创建者</span>
+                    <span class="detail-value" id="gameCreator">张三</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提示信息 -->
+        <div class="info-notice">
+            <div class="info-icon">ℹ</div>
+            <div class="info-content">
+                <div class="info-title">结算说明</div>
+                <div class="info-text">
+                    请选择实际参与本次球局的人员，系统将根据选择的人数自动计算人均费用。未参与的人员不会被收取费用。
+                </div>
+            </div>
+        </div>
+
+        <!-- 参与者选择卡片 -->
+        <div class="participants-card">
+            <h3>选择参与者 <span class="required">*</span></h3>
+            <p class="selection-subtitle">请勾选实际参与本次球局的人员</p>
+            
+            <div class="participants-list" id="participantsList">
+                <!-- 参与者列表将通过JavaScript动态生成 -->
+            </div>
+
+            <div class="selection-summary">
+                <div class="summary-text" id="selectionSummary">
+                    已选择 <span id="selectedCount">0</span> 人参与结算
+                </div>
+            </div>
+        </div>
+
+        <!-- 费用汇总卡片 -->
+        <div class="cost-summary-card">
+            <h3>费用汇总</h3>
+            
+            <div class="cost-breakdown">
+                <div class="cost-row">
+                    <span class="cost-label">场地费用</span>
+                    <span class="cost-value" id="venueCost">¥120.00</span>
+                </div>
+                <div class="cost-row">
+                    <span class="cost-label">羽毛球费用</span>
+                    <span class="cost-value" id="shuttlecockCost">¥30.00</span>
+                </div>
+                <div class="cost-row">
+                    <span class="cost-label">其他费用</span>
+                    <span class="cost-value" id="otherCost">¥0.00</span>
+                </div>
+                <div class="cost-row">
+                    <span class="cost-label">总费用</span>
+                    <span class="cost-value" id="totalCost">¥150.00</span>
+                </div>
+                <div class="cost-row">
+                    <span class="cost-label">人均费用</span>
+                    <span class="cost-value">
+                        <span id="perPersonCost">¥0.00</span>
+                        <span class="per-person-note">/ 人</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 分摊详情 -->
+            <div class="split-details" id="splitDetails" style="display: none;">
+                <h4>费用分摊详情</h4>
+                <div id="splitList">
+                    <!-- 分摊详情将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="goBack()">
+                返回修改
+            </button>
+            <button class="btn btn-primary" onclick="confirmSettlement()" id="confirmBtn">
+                确认结算
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 模拟参与者数据
+        const participants = [
+            { id: 1, name: '张三', level: '3级', avatar: '张' },
+            { id: 2, name: '李四', level: '4级', avatar: '李' },
+            { id: 3, name: '王五', level: '2级', avatar: '王' },
+            { id: 4, name: '赵六', level: '3级', avatar: '赵' },
+            { id: 5, name: '钱七', level: '5级', avatar: '钱' },
+            { id: 6, name: '孙八', level: '2级', avatar: '孙' }
+        ];
+
+        // 费用数据
+        const costData = {
+            venue: 120.00,
+            shuttlecock: 30.00,
+            other: 0.00
+        };
+
+        let selectedParticipants = new Set();
+
+        // 初始化页面
+        function initializePage() {
+            renderParticipants();
+            updateCostSummary();
+            
+            // 默认选择所有参与者
+            participants.forEach(p => selectedParticipants.add(p.id));
+            updateParticipantSelection();
+        }
+
+        // 渲染参与者列表
+        function renderParticipants() {
+            const container = document.getElementById('participantsList');
+            container.innerHTML = '';
+
+            participants.forEach(participant => {
+                const item = document.createElement('div');
+                item.className = 'participant-item';
+                item.onclick = () => toggleParticipant(participant.id);
+                
+                item.innerHTML = `
+                    <div class="participant-checkbox"></div>
+                    <div class="participant-avatar">${participant.avatar}</div>
+                    <div class="participant-info">
+                        <div class="participant-name">${participant.name}</div>
+                        <div class="participant-level">${participant.level}</div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        // 切换参与者选择状态
+        function toggleParticipant(participantId) {
+            if (selectedParticipants.has(participantId)) {
+                selectedParticipants.delete(participantId);
+            } else {
+                selectedParticipants.add(participantId);
+            }
+            updateParticipantSelection();
+        }
+
+        // 更新参与者选择状态显示
+        function updateParticipantSelection() {
+            const items = document.querySelectorAll('.participant-item');
+            
+            items.forEach((item, index) => {
+                const participantId = participants[index].id;
+                if (selectedParticipants.has(participantId)) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+
+            // 更新选择摘要
+            document.getElementById('selectedCount').textContent = selectedParticipants.size;
+            
+            // 更新费用计算
+            updateCostSummary();
+        }
+
+        // 更新费用汇总
+        function updateCostSummary() {
+            const totalCost = costData.venue + costData.shuttlecock + costData.other;
+            const selectedCount = selectedParticipants.size;
+            const perPersonCost = selectedCount > 0 ? totalCost / selectedCount : 0;
+
+            document.getElementById('venueCost').textContent = `¥${costData.venue.toFixed(2)}`;
+            document.getElementById('shuttlecockCost').textContent = `¥${costData.shuttlecock.toFixed(2)}`;
+            document.getElementById('otherCost').textContent = `¥${costData.other.toFixed(2)}`;
+            document.getElementById('totalCost').textContent = `¥${totalCost.toFixed(2)}`;
+            document.getElementById('perPersonCost').textContent = `¥${perPersonCost.toFixed(2)}`;
+
+            // 显示/隐藏分摊详情
+            const splitDetails = document.getElementById('splitDetails');
+            if (selectedCount > 0) {
+                splitDetails.style.display = 'block';
+                renderSplitDetails(perPersonCost);
+            } else {
+                splitDetails.style.display = 'none';
+            }
+        }
+
+        // 渲染分摊详情
+        function renderSplitDetails(perPersonCost) {
+            const container = document.getElementById('splitList');
+            container.innerHTML = '';
+
+            selectedParticipants.forEach(participantId => {
+                const participant = participants.find(p => p.id === participantId);
+                if (participant) {
+                    const item = document.createElement('div');
+                    item.className = 'split-item';
+                    
+                    item.innerHTML = `
+                        <div class="split-participant">
+                            <div class="split-avatar">${participant.avatar}</div>
+                            <span class="split-name">${participant.name}</span>
+                        </div>
+                        <span class="split-amount">¥${perPersonCost.toFixed(2)}</span>
+                    `;
+                    
+                    container.appendChild(item);
+                }
+            });
+        }
+
+        // 返回修改
+        function goBack() {
+            if (confirm('确定要返回修改吗？当前的选择将会丢失。')) {
+                window.history.back();
+            }
+        }
+
+        // 确认结算
+        function confirmSettlement() {
+            if (selectedParticipants.size === 0) {
+                alert('请至少选择一位参与者进行结算！');
+                return;
+            }
+
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+            // 显示加载状态
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="loading"></span> 结算中...';
+
+            // 模拟结算处理
+            setTimeout(() => {
+                const totalCost = costData.venue + costData.shuttlecock + costData.other;
+                const perPersonCost = totalCost / selectedParticipants.size;
+                
+                // 保存结算数据
+                const settlementData = {
+                    participants: Array.from(selectedParticipants).map(id => 
+                        participants.find(p => p.id === id)
+                    ),
+                    costs: costData,
+                    totalCost: totalCost,
+                    perPersonCost: perPersonCost,
+                    settlementTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('lastSettlement', JSON.stringify(settlementData));
+                
+                alert(`结算完成！\n\n参与人数：${selectedParticipants.size}人\n总费用：¥${totalCost.toFixed(2)}\n人均费用：¥${perPersonCost.toFixed(2)}\n\n费用分摊通知已发送给所有参与者。`);
+                
+                // 跳转到赛后评价页面
+                window.location.href = 'post-game-rating.html';
+            }, 2000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

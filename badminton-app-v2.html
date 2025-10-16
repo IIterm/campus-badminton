@@ -1,0 +1,4658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽毛球组局应用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 认证界面样式 */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 40px 20px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .auth-input {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .auth-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+
+        .auth-error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .header {
+            background: white;
+            color: #333;
+            padding: 30px 20px;
+            position: relative;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .filter-section {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            backdrop-filter: blur(10px);
+            border: 2px solid #000; /* 添加黑色边框 */
+        }
+
+        .filter-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #000; /* 为每个筛选组添加黑色边框 */
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .apply-btn {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .apply-btn:hover {
+            background: #3db8af;
+        }
+
+        .reset-btn {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: 1px solid #ccc;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border: 1px solid #999;
+        }
+        
+        .filter-select option {
+            background: white;
+            color: #333;
+        }
+        
+        .filter-select option:checked {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .filter-select option:hover {
+            background: #f0f0f0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .empty-state p {
+            font-size: 1rem;
+            color: #7f8c8d;
+        }
+
+        .games-list {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .game-item {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4ecdc4;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .game-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-item.urgent {
+            background: white;
+            border-left: 5px solid #ff9800;
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        .game-item.urgent:hover {
+            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.3);
+        }
+
+        .urgent-badge {
+            background: white;
+            color: #ff9800;
+            border: 1px solid #ff9800;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+            animation: blink 1.5s infinite;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .level-badge {
+            background: #4ecdc4;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .game-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-icon {
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .contact-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .contact-label {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-right: 10px;
+        }
+
+        .videos-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+        }
+
+        .video-list {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .video-item {
+            background: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #1976d2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-item:hover {
+            background: #bbdefb;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .video-item::before {
+            content: '▶️';
+            font-size: 0.8em;
+        }
+
+        /* 视频播放模态框样式 */
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .video-modal-content {
+            position: relative;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .video-modal-header {
+            background: white;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .video-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .video-modal-close:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .video-modal-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .video-placeholder {
+            width: 100%;
+            height: 400px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .video-placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .video-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .video-info h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .video-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px 30px;
+            position: sticky;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .footer-left {
+            flex: 1.5;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .footer-center {
+            flex: 1.5;
+            display: flex;
+            justify-content: center;
+        }
+
+        .footer-right {
+            flex: 1.5;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .generate-btn.main-btn {
+            background: white;
+            color: #2c3e50;
+            border: 1px solid #ddd;
+            padding: 18px 45px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+            transform: scale(1.1);
+        }
+
+        .generate-btn.main-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 18px 35px rgba(255, 215, 0, 0.5);
+        }
+
+        .nav-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .history-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-btn:hover {
+            box-shadow: 0 12px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 历史球局样式 */
+        .history-games-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-game-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .history-game-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .history-game-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+            color: #333;
+        }
+
+        .history-game-info {
+            flex: 1;
+        }
+
+        .history-game-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .history-game-details {
+            margin-bottom: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .detail-icon {
+            width: 16px;
+            margin-right: 8px;
+            text-align: center;
+        }
+
+        .settlement-info {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .history-game-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+
+        .history-game-status {
+            color: #667eea;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+            color: #333;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #333;
+        }
+
+        /* 学校信息样式 */
+        .school-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .school-badge {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border: 4px solid white;
+        }
+
+        .school-text h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #333;
+        }
+
+        .school-text p {
+            margin: 5px 0 0 0;
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+
+        /* 用户信息样式 */
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: flex-end;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-btn {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .profile-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* 排行榜按钮样式 */
+        .ranking-section {
+            margin-left: 15px;
+        }
+
+        .ranking-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .ranking-btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 学校背景样式 */
+        .school-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 学校搜索栏样式 */
+        .school-search-container {
+            margin-bottom: 20px;
+        }
+
+        .school-search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #4ecdc4;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .school-search-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.3);
+            background: white;
+        }
+        
+        .school-search-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .auth-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .auth-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.3);
+            background: white;
+        }
+        
+        /* 智能学校搜索框样式 */
+        .smart-school-search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .smart-school-search {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .smart-school-search:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.3);
+            background: white;
+        }
+        
+        .smart-school-search::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        .generate-btn:active {
+            transform: scale(0.95);
+        }
+
+        .game-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-item:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #e74c3c;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .time-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .time-type-selection {
+            margin-bottom: 10px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 5px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .time-option-content {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .weekday-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .checkbox-option:hover {
+            background-color: #e8f5f4;
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .form-hint {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .video-upload {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .video-upload:hover {
+            border-color: #4ecdc4;
+        }
+
+        .upload-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .uploaded-videos {
+            margin-top: 15px;
+        }
+
+        .video-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .submit-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+            border-color: #bd2130;
+            transform: translateY(-2px);
+        }
+
+        .level-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        /* 详情页样式 */
+        .detail-content {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .detail-section-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4ecdc4;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-item .detail-icon {
+            width: 24px;
+            height: 24px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .detail-item .detail-label {
+            font-weight: 500;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .detail-item .detail-value {
+            color: #333;
+            flex: 1;
+        }
+
+        .detail-item.highlight {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+        }
+
+        .detail-item.highlight .detail-label,
+        .detail-item.highlight .detail-value {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .game-detail-section {
+            margin-bottom: 25px;
+        }
+
+        .game-detail-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .time-remaining {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .status-info {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .status-info.urgent {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-info.ongoing {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-info.upcoming {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .join-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .join-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .end-btn {
+            background: white;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .end-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .close-detail-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-detail-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .chat-btn {
+            background: white;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .delete-btn {
+            background: white;
+            color: #ff4757;
+            border: 1px solid #ff4757;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        /* 聊天模态框样式 */
+        .chat-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .chat-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: none;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .chat-header {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .chat-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .chat-close-btn:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .message.own {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .message.own .message-avatar {
+            background: #ff6b6b;
+        }
+
+        .message-content {
+            max-width: 70%;
+        }
+
+        .message-bubble {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
+
+        .message.own .message-bubble {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .message-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .message.own .message-info {
+            justify-content: flex-end;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: white;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 2px solid #eee;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #ff6b6b;
+        }
+
+        .chat-send-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send-btn:hover {
+            background: #ee5a52;
+            transform: scale(1.05);
+        }
+
+        .chat-send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-chat {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+        }
+
+        .empty-chat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .game-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .time-settings {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-actions {
+                flex-direction: column;
+            }
+
+            .join-btn, .close-detail-btn {
+                width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+
+        /* 好友列表样式 */
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .friend-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #ff6b6b;
+        }
+
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .friend-school {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+
+        .friend-rating {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .friend-action-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .friend-action-btn:hover {
+            background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        /* 勋章系统样式 */
+        .badges-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .badge-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .badge-item.earned {
+            border-color: #ff6b6b;
+            background: white;
+            opacity: 1;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+        }
+
+        .badge-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-item.earned:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .badge-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+
+        .badge-item.earned .badge-icon {
+            filter: none;
+        }
+
+        .badge-info {
+            flex: 1;
+        }
+
+        .badge-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .badge-item.earned .badge-name {
+            color: #ff6b6b;
+        }
+
+        .badge-desc {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .badge-item.earned .badge-desc {
+            color: #555;
+        }
+
+        /* 头像相关样式 */
+        .avatar-display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar-display {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #ff6b6b;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .avatar-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: #ddd;
+        }
+
+        .avatar-upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #ff6b6b;
+            overflow: hidden;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .avatar-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .select-avatar-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .select-avatar-btn:hover {
+            background: #ff5252;
+        }
+
+        .remove-avatar-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .remove-avatar-btn:hover {
+            background: #5a6268;
+        }
+
+        .avatar-upload-note {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        #avatarInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- 学校背景 -->
+    <div class="school-background" id="schoolBackground"></div>
+    
+    <!-- 主内容界面 -->
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+            <div class="header-content">
+                <!-- 校徽和学校信息 -->
+                <div class="school-info">
+                    <div class="school-badge" id="schoolBadge">🏫</div>
+                    <div class="school-text">
+                        <h1>🏸 生命不息 羽球不止</h1>
+                        <p id="schoolWelcome">快来加入羽球大家庭，与同学们一起交流切磋吧~</p>
+                    </div>
+                </div>
+                
+                <div class="ranking-section" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                    <button class="ranking-btn" onclick="openRankingPage()" style="background: white; color: #333; border: 1px solid #ddd; border-radius: 12px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                        🏆 排行榜
+                    </button>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-title">🔍 筛选球局</div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">⏰ 时间筛选</label>
+                        <select class="filter-select" id="timeFilter">
+                            <option value="">全部时间</option>
+                            <option value="工作日">工作日</option>
+                            <option value="周末">周末</option>
+                            <option value="周一">周一</option>
+                            <option value="周二">周二</option>
+                            <option value="周三">周三</option>
+                            <option value="周四">周四</option>
+                            <option value="周五">周五</option>
+                            <option value="周六">周六</option>
+                            <option value="周日">周日</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">📍 地点筛选</label>
+                        <div class="location-filter-container" style="position: relative;">
+                            <input type="text" class="filter-select" id="locationFilter" placeholder="输入或选择地点" list="locationOptions">
+                            <datalist id="locationOptions">
+                                <option value="全部地点">
+                                <option value="竹海羽毛球馆">
+                                <option value="南湖羽毛球馆">
+                                <option value="文昌羽毛球馆">
+                                <option value="恒动羽毛球馆">
+                            </datalist>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">📊 水平筛选</label>
+                        <select class="filter-select" id="levelFilter">
+                            <option value="">全部水平</option>
+                            <option value="1级">1级 - 初学者</option>
+                            <option value="2级">2级 - 基础水平</option>
+                            <option value="3级">3级 - 中级水平</option>
+                            <option value="4级">4级 - 中高级水平</option>
+                            <option value="5级">5级 - 高级水平</option>
+                            <option value="6级">6级 - 专业水平</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="button" class="filter-btn apply-btn" onclick="applyFilters()">应用筛选</button>
+                        <button type="button" class="filter-btn reset-btn" onclick="resetFilters()">重置筛选</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="games-list" id="gamesList">
+            <!-- 球局列表将在这里动态生成 -->
+        </div>
+        
+        <div class="footer">
+            <div class="footer-left">
+                <div class="nav-item" onclick="showMainPage();">
+                    🏠 首页
+                </div>
+                <div class="nav-item" onclick="openHistoryModal();">
+                    📚 历史球局
+                </div>
+            </div>
+            <div class="footer-center">
+                <button type="button" class="generate-btn main-btn" onclick="openCreateModal();">
+                    🏸 一键生成新球局
+                </button>
+            </div>
+            <div class="footer-right">
+                <div class="nav-item" onclick="openFriendsModal();">
+                    👥 好友
+                </div>
+                <div class="nav-item" onclick="openPersonalInfoModal();">
+                    👤 个人信息
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 球局详情页模态框 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detailTitle">球局详情</h2>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+            </div>
+            
+            <div class="detail-content">
+                <!-- 头像显示区域 -->
+                <div class="detail-section">
+                    <h3 class="detail-section-title">头像</h3>
+                    <div class="avatar-display-container">
+                        <div class="avatar-display" id="avatarDisplay">
+                            <img id="avatarImage" src="" alt="用户头像" style="display: none;">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <div class="avatar-icon">👤</div>
+                                <div class="avatar-text">暂无头像</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3 class="detail-section-title">基本信息</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-icon">🏸</div>
+                            <div>
+                                <strong>球局标题:</strong>
+                                <span id="detailGameTitle"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">📊</div>
+                            <div>
+                                <strong>水平等级:</strong>
+                                <span id="detailLevel" class="level-badge"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">⏰</div>
+                            <div>
+                                <strong>时间:</strong>
+                                <span id="detailTime"></span>
+                                <div id="detailTimeRemaining" class="time-remaining"></div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">📍</div>
+                            <div>
+                                <strong>地点:</strong>
+                                <span id="detailLocation"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👥</div>
+                            <div>
+                                <strong>参与人数:</strong>
+                                <span id="detailPlayers"></span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">🏸</div>
+                            <div>
+                                <strong>羽毛球信息:</strong>
+                                <div style="display: flex; gap: 20px; margin-top: 5px;">
+                                    <span><strong>名称:</strong> <span id="detailShuttlecockName"></span></span>
+                                    <span><strong>价格:</strong> <span id="detailShuttlecockPrice"></span>元</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👤</div>
+                            <div>
+                                <strong>组局人:</strong>
+                                <span id="detailOrganizerName"></span>
+                                <div id="detailOrganizerRating" style="color: #ffa726; font-size: 0.9em;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-section-title">参考视频</h3>
+                    <div id="detailVideos" class="video-list"></div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-section-title">联系方式</h3>
+                    <div class="contact-info">
+                        <span class="contact-label">📞 联系方式:</span>
+                        <span id="detailContact"></span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-section-title">球局状态</h3>
+                    <div id="detailStatus" class="status-info"></div>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <button id="joinGameBtn" class="join-btn" onclick="joinGame()">加入球局</button>
+                <button id="endGameBtn" class="end-btn" onclick="endGame()" style="display: none;">🏁 结束球局</button>
+                <button class="chat-btn" onclick="openChatModal()">💬 聊天</button>
+                <button id="deleteGameBtn" class="delete-btn" onclick="deleteGame()" style="display: none;">🗑️ 删除球局</button>
+                <button class="close-detail-btn" onclick="closeDetailModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建球局模态框 -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">创建新球局</h2>
+                <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+            </div>
+            
+            <form id="createGameForm">
+                <div class="form-group">
+                    <label class="form-label">球局标题</label>
+                    <input type="text" class="form-input" id="gameTitle" placeholder="例如：周末羽毛球欢乐局" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">时间设置</label>
+                    <div class="time-settings">
+                        <div class="time-type-selection">
+                            <label class="form-label">类型</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="timeType" value="temporary" checked>
+                                    <span>临时</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="timeType" value="weekly">
+                                    <span>每周</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="temporaryTimeSettings" class="time-option-content">
+                            <div class="time-row">
+                                <div>
+                                    <label class="form-label">星期</label>
+                                    <select class="form-select" id="weekday" multiple size="5">
+                                        <option value="周一">周一</option>
+                                        <option value="周二">周二</option>
+                                        <option value="周三">周三</option>
+                                        <option value="周四">周四</option>
+                                        <option value="周五">周五</option>
+                                        <option value="周六">周六</option>
+                                        <option value="周日">周日</option>
+                                    </select>
+                                    <small class="form-hint">按住Ctrl键可多选</small>
+                                </div>
+                                <div>
+                                    <label class="form-label">时间段</label>
+                                    <select class="form-select" id="timeSlot" multiple size="5">
+                                        <option value="18:00-20:00">18:00-20:00</option>
+                                        <option value="19:00-21:00">19:00-21:00</option>
+                                        <option value="20:00-22:00">20:00-22:00</option>
+                                        <option value="14:00-16:00">14:00-16:00</option>
+                                        <option value="15:00-17:00">15:00-17:00</option>
+                                        <option value="09:00-11:00">09:00-11:00</option>
+                                    </select>
+                                    <small class="form-hint">按住Ctrl键可多选</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="weeklyTimeSettings" class="time-option-content" style="display: none;">
+                            <div class="time-row">
+                                <div>
+                                    <label class="form-label">星期几</label>
+                                    <div class="weekday-checkboxes">
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周一">
+                                            <span>周一</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周二">
+                                            <span>周二</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周三">
+                                            <span>周三</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周四">
+                                            <span>周四</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周五">
+                                            <span>周五</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周六">
+                                            <span>周六</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="weeklyDays" value="周日">
+                                            <span>周日</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label">时间段</label>
+                                    <select class="form-select" id="weeklyTimeSlot">
+                                        <option value="">选择时间段</option>
+                                        <option value="18:00-20:00">18:00-20:00</option>
+                                        <option value="19:00-21:00">19:00-21:00</option>
+                                        <option value="20:00-22:00">20:00-22:00</option>
+                                        <option value="14:00-16:00">14:00-16:00</option>
+                                        <option value="15:00-17:00">15:00-17:00</option>
+                                        <option value="09:00-11:00">09:00-11:00</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">中羽水平等级</label>
+                    <select class="form-select" id="badmintonLevel" required>
+                        <option value="">选择水平等级</option>
+                        <option value="1级">1级 - 初学者，基本动作不熟练</option>
+                        <option value="2级">2级 - 能完成基本击球，但稳定性差</option>
+                        <option value="3级">3级 - 掌握基本技术，能进行简单对抗</option>
+                        <option value="4级">4级 - 技术较全面，能进行战术配合</option>
+                        <option value="5级">5级 - 技术熟练，具备较强比赛能力</option>
+                        <option value="6级">6级 - 专业水平，技术全面精湛</option>
+                    </select>
+                    <div class="level-description">请根据中羽等级标准选择您的水平</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">打球视频上传（1-3段）</label>
+                    <div class="video-upload">
+                        <p>上传您的打球视频，供参与者参考水平</p>
+                        <input type="file" id="videoUpload" accept="video/*" multiple style="display: none;">
+                        <button type="button" class="upload-btn" onclick="document.getElementById('videoUpload').click()">
+                            选择视频文件
+                        </button>
+                        <div class="level-description">支持mp4、mov等常见视频格式，每个文件不超过100MB</div>
+                    </div>
+                    <div id="uploadedVideos" class="uploaded-videos"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">联系方式</label>
+                    <div>
+                        <label class="form-label">手机号（必填）</label>
+                        <input type="tel" class="form-input" id="phoneNumber" placeholder="请输入您的手机号" required pattern="[0-9]{11}">
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label class="form-label">微信或QQ号（二选一）</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" class="form-input" id="wechat" placeholder="微信号（选填）">
+                            <input type="text" class="form-input" id="qq" placeholder="QQ号（选填）">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">地点</label>
+                    <input type="text" class="form-input" id="location" placeholder="例如：市体育馆羽毛球馆" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">参与人数</label>
+                    <select class="form-select" id="playerCount" required>
+                        <option value="">选择人数</option>
+                        <option value="2">2人</option>
+                        <option value="3">3人</option>
+                        <option value="4">4人</option>
+                        <option value="6">6人</option>
+                        <option value="8">8人</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">羽毛球信息</label>
+                    <div style="display: flex; gap: 20px;">
+                        <div style="flex: 1;">
+                            <label class="form-label">羽毛球名称</label>
+                            <input type="text" class="form-input" id="shuttlecockName" placeholder="请输入羽毛球名称" required>
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="form-label">价格</label>
+                            <input type="number" class="form-input" id="shuttlecockPrice" placeholder="请输入价格" min="0" step="1" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">创建球局</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 聊天模态框 -->
+    <div id="chatModal" class="chat-modal">
+        <div class="chat-modal-content">
+            <div class="chat-header">
+                <h2 class="chat-title" id="chatTitle">球局聊天室</h2>
+                <button class="chat-close-btn" onclick="closeChatModal()">&times;</button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-chat">
+                    <div class="empty-chat-icon">💬</div>
+                    <p>还没有消息，开始聊天吧！</p>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="chat-input-container">
+                    <textarea 
+                        class="chat-input" 
+                        id="chatInput" 
+                        placeholder="输入消息..." 
+                        rows="1"
+                        onkeypress="handleChatKeyPress(event)"
+                    ></textarea>
+                    <button class="chat-send-btn" onclick="sendMessage()">
+                        📤
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人信息模态框 -->
+    <div id="personalInfoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">个人信息</h2>
+                <button class="close-btn" onclick="closePersonalInfoModal()">&times;</button>
+            </div>
+            
+            <div class="detail-content">
+                <div class="detail-section">
+                    <h3 class="detail-section-title">基本信息</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-icon">👤</div>
+                            <div>
+                                <strong>姓名:</strong>
+                                <span id="personalName">张三</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">⭐</div>
+                            <div>
+                                <strong>评分:</strong>
+                                <span id="personalRating" class="level-badge">8.5分</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👥</div>
+                            <div>
+                                <strong>性别:</strong>
+                                <span id="personalGender">未设置</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">🎂</div>
+                            <div>
+                                <strong>年龄:</strong>
+                                <span id="personalAge">未设置</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">📅</div>
+                            <div>
+                                <strong>生日:</strong>
+                                <span id="personalBirthday">未设置</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">✍️</div>
+                            <div>
+                                <strong>个性签名:</strong>
+                                <span id="personalSignature">未设置</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 勋章系统 -->
+                <div class="detail-section">
+                    <h3 class="detail-section-title">我的勋章</h3>
+                    <div class="badges-container" id="badgesContainer">
+                        <div class="badge-item earned" data-badge="icebreaker">
+                            <div class="badge-icon">🧊</div>
+                            <div class="badge-info">
+                                <div class="badge-name">破冰达人</div>
+                                <div class="badge-desc">积极参与新球局</div>
+                            </div>
+                        </div>
+                        <div class="badge-item" data-badge="punctual">
+                            <div class="badge-icon">⏰</div>
+                            <div class="badge-info">
+                                <div class="badge-name">守时之星</div>
+                                <div class="badge-desc">准时参加球局</div>
+                            </div>
+                        </div>
+                        <div class="badge-item" data-badge="social">
+                            <div class="badge-icon">🤝</div>
+                            <div class="badge-info">
+                                <div class="badge-name">社交达人</div>
+                                <div class="badge-desc">活跃的社交互动</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3 class="detail-section-title">编辑信息</h3>
+                    <div class="form-group">
+                        <label class="form-label">头像</label>
+                        <div class="avatar-upload-container">
+                            <div class="avatar-preview" id="avatarPreview">
+                                <img id="avatarPreviewImage" src="" alt="头像预览" style="display: none;">
+                                <div class="avatar-preview-placeholder" id="avatarPreviewPlaceholder">
+                                    <div class="avatar-preview-icon">📷</div>
+                                    <div class="avatar-preview-text">点击上传头像</div>
+                                </div>
+                            </div>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+                            <button type="button" class="avatar-upload-btn" onclick="document.getElementById('avatarUpload').click()">选择头像</button>
+                            <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" onclick="removeAvatar()" style="display: none;">移除头像</button>
+                        </div>
+                        <small style="color: #666; font-size: 0.9em;">支持JPG、PNG格式，建议尺寸200x200像素</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">姓名</label>
+                        <input type="text" class="form-input" id="editPersonalName" placeholder="请输入姓名">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">评分</label>
+                        <input type="number" class="form-input" id="editPersonalRating" placeholder="系统自动计算" min="0" max="10" step="0.1" readonly disabled>
+                        <small style="color: #666; font-size: 0.9em;">评分由系统根据比赛表现自动计算</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">性别</label>
+                        <select class="form-input" id="editPersonalGender">
+                            <option value="">请选择性别</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">年龄</label>
+                        <input type="number" class="form-input" id="editPersonalAge" placeholder="请输入年龄" min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">生日</label>
+                        <input type="date" class="form-input" id="editPersonalBirthday">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">个性签名</label>
+                        <textarea class="form-input" id="editPersonalSignature" placeholder="请输入个性签名" rows="3" maxlength="100"></textarea>
+                        <small style="color: #666; font-size: 0.9em;">最多100个字符</small>
+                    </div>
+                    <button type="button" class="submit-btn" onclick="savePersonalInfo()">保存信息</button>
+                    <button type="button" class="logout-btn" onclick="logout()">退出登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史球局模态框 -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">历史球局</h2>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            
+            <div class="detail-content">
+                <div class="detail-section">
+                    <h3 class="detail-section-title">我参与的球局</h3>
+                    <div id="historyGamesList" class="history-games-list">
+                        <!-- 历史球局列表将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3 class="detail-section-title">统计信息</h3>
+                    <div class="history-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">🏸</div>
+                            <div class="stat-info">
+                                <div class="stat-label">总参与次数</div>
+                                <div class="stat-value" id="totalGamesCount">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-info">
+                                <div class="stat-label">总运动时长</div>
+                                <div class="stat-value" id="totalPlayTime">0小时</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-label">总消费金额</div>
+                                <div class="stat-value" id="totalCost">¥0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 好友模态框 -->
+    <div id="friendsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">好友列表</h2>
+                <button class="close-btn" onclick="closeFriendsModal()">&times;</button>
+            </div>
+            
+            <div class="detail-content">
+                <div class="detail-section" style="margin-bottom: 15px;">
+                    <h3 class="detail-section-title" style="margin-bottom: 10px;">添加好友</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" class="form-input" id="searchFriend" placeholder="输入用户名或账号" style="flex: 1; padding: 10px 15px; font-size: 1rem; border-radius: 6px;">
+                        <button type="button" class="submit-btn" onclick="searchFriend()" style="padding: 6px 8px; font-size: 0.8rem; white-space: nowrap; min-width: 40px; flex-shrink: 0; border-radius: 4px; width: auto; margin-top: 0;">搜索</button>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3 class="detail-section-title">我的好友</h3>
+                    <div id="friendsList" class="friends-list">
+                        <div class="friend-item" onclick="openFriendProfile('李四', '清华大学', '9.0', ['icebreaker', 'punctual'])">
+                            <div class="friend-avatar">👤</div>
+                            <div class="friend-info">
+                                <div class="friend-name">李四</div>
+                                <div class="friend-school">清华大学</div>
+                                <div class="friend-rating">评分: 9.0</div>
+                            </div>
+                            <button class="friend-action-btn" onclick="event.stopPropagation(); inviteFriend('李四')">邀请</button>
+                        </div>
+                        <div class="friend-item" onclick="openFriendProfile('王五', '北京理工大学', '7.8', ['social'])">
+                            <div class="friend-avatar">👤</div>
+                            <div class="friend-info">
+                                <div class="friend-name">王五</div>
+                                <div class="friend-school">北京理工大学</div>
+                                <div class="friend-rating">评分: 7.8</div>
+                            </div>
+                            <button class="friend-action-btn" onclick="event.stopPropagation(); inviteFriend('王五')">邀请</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 好友个人主页模态框 -->
+    <div id="friendProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="friendProfileTitle">好友个人主页</h2>
+                <button class="close-btn" onclick="closeFriendProfileModal()">&times;</button>
+            </div>
+            
+            <div class="detail-content">
+                <div class="detail-section">
+                    <h3 class="detail-section-title">基本信息</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-icon">👤</div>
+                            <div>
+                                <strong>姓名:</strong>
+                                <span id="friendProfileName">好友姓名</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">⭐</div>
+                            <div>
+                                <strong>评分:</strong>
+                                <span id="friendProfileRating" class="level-badge">0分</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">🏫</div>
+                            <div>
+                                <strong>学校:</strong>
+                                <span id="friendProfileSchool">学校名称</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 好友勋章系统 -->
+                <div class="detail-section">
+                    <h3 class="detail-section-title">TA的勋章</h3>
+                    <div class="badges-container" id="friendBadgesContainer">
+                        <div class="badge-item" data-badge="icebreaker">
+                            <div class="badge-icon">🧊</div>
+                            <div class="badge-info">
+                                <div class="badge-name">破冰达人</div>
+                                <div class="badge-desc">积极参与新球局</div>
+                            </div>
+                        </div>
+                        <div class="badge-item" data-badge="punctual">
+                            <div class="badge-icon">⏰</div>
+                            <div class="badge-info">
+                                <div class="badge-name">守时之星</div>
+                                <div class="badge-desc">准时参加球局</div>
+                            </div>
+                        </div>
+                        <div class="badge-item" data-badge="social">
+                            <div class="badge-icon">🤝</div>
+                            <div class="badge-info">
+                                <div class="badge-name">社交达人</div>
+                                <div class="badge-desc">活跃的社交互动</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3 class="detail-section-title">操作</h3>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button type="button" class="submit-btn" onclick="inviteFriendFromProfile()">邀请打球</button>
+                        <button type="button" class="submit-btn" style="background: #28a745;" onclick="sendMessageToFriend()">发送消息</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 时间计算辅助函数
+        function getNextSaturdayAt(hour, minute) {
+            const now = new Date();
+            const daysUntilSaturday = (6 - now.getDay() + 7) % 7;
+            const nextSaturday = new Date(now);
+            nextSaturday.setDate(now.getDate() + daysUntilSaturday);
+            nextSaturday.setHours(hour, minute, 0, 0);
+            return nextSaturday;
+        }
+
+        function getNextWeekdayAt(hour, minute) {
+            const now = new Date();
+            const nextWeekday = new Date(now);
+            if (now.getDay() === 0 || now.getDay() === 6) {
+                const daysUntilMonday = (1 - now.getDay() + 7) % 7;
+                nextWeekday.setDate(now.getDate() + daysUntilMonday);
+            }
+            nextWeekday.setHours(hour, minute, 0, 0);
+            return nextWeekday;
+        }
+
+        
+
+        // 判断球局是否即将开始（半小时内）
+        function isGameStartingSoon(game) {
+            if (!game.startTime) return false;
+            
+            const now = new Date();
+            const startTime = new Date(game.startTime);
+            const timeDiff = startTime - now;
+            
+            return timeDiff > 0 && timeDiff <= 30 * 60 * 1000;
+        }
+
+        // 获取剩余时间显示
+        function getTimeRemaining(game) {
+            if (!game.startTime) return '';
+            
+            const now = new Date();
+            const startTime = new Date(game.startTime);
+            const timeDiff = startTime - now;
+            
+            if (timeDiff <= 0) return '已开始';
+            
+            const minutes = Math.floor(timeDiff / (1000 * 60));
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            
+            if (hours > 0) {
+                return `${hours}小时${remainingMinutes}分钟后开始`;
+            } else {
+                return `${minutes}分钟后开始`;
+            }
+        }
+
+        // 模态框控制
+        function openCreateModal() {
+            console.log('openCreateModal函数被调用');
+            const modal = document.getElementById('createModal');
+            console.log('找到模态框元素:', modal);
+            if (modal) {
+                console.log('设置模态框显示');
+                modal.style.display = 'block';
+                modal.style.animation = 'fadeIn 0.3s ease';
+            } else {
+                console.error('未找到模态框元素');
+            }
+        }
+
+        function closeCreateModal() {
+            const modal = document.getElementById('createModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            resetForm();
+        }
+
+        // 详情页控制函数
+        let currentGameId = null;
+
+        function openDetailModal(gameId) {
+            console.log('打开详情页，球局ID:', gameId);
+            console.log('games数组:', games);
+            currentGameId = gameId;
+            const game = games.find(g => g.id === gameId);
+            console.log('找到的球局:', game);
+            
+            if (!game) {
+                console.error('未找到球局:', gameId);
+                return;
+            }
+
+            // 填充详情页数据
+            document.getElementById('detailTitle').textContent = game.title;
+            document.getElementById('detailGameTitle').textContent = game.title;
+            document.getElementById('detailLevel').textContent = game.level;
+            document.getElementById('detailTime').textContent = game.time;
+            document.getElementById('detailLocation').textContent = game.location;
+            document.getElementById('detailPlayers').textContent = game.players + '人';
+            document.getElementById('detailContact').textContent = game.contact;
+            
+            // 设置羽毛球信息
+            document.getElementById('detailShuttlecockName').textContent = game.shuttlecockName;
+            document.getElementById('detailShuttlecockPrice').textContent = game.shuttlecockPrice;
+            
+            // 设置组局人信息
+            document.getElementById('detailOrganizerName').textContent = game.organizer.name;
+            const rating = game.organizer.rating;
+            const fullStars = Math.floor(rating);
+            const emptyStars = 5 - fullStars;
+            document.getElementById('detailOrganizerRating').innerHTML = 
+                '★'.repeat(fullStars) + '☆'.repeat(emptyStars) + 
+                `<span style="color: #666; margin-left: 4px;">(${rating}分)</span>`;
+
+            // 设置剩余时间
+            const timeRemaining = getTimeRemaining(game);
+            const timeRemainingEl = document.getElementById('detailTimeRemaining');
+            if (timeRemaining) {
+                timeRemainingEl.textContent = timeRemaining;
+                timeRemainingEl.style.display = 'block';
+            } else {
+                timeRemainingEl.style.display = 'none';
+            }
+
+            // 设置视频列表
+            const videosEl = document.getElementById('detailVideos');
+            if (game.videos && game.videos.length > 0) {
+                videosEl.innerHTML = game.videos.map(video => 
+                    `<div class="video-item" onclick="openVideoModal('${video}', ${game.id})">${video}</div>`
+                ).join('');
+            } else {
+                videosEl.innerHTML = '<div style="color: #666;">暂无参考视频</div>';
+            }
+
+            // 设置球局状态
+            const statusEl = document.getElementById('detailStatus');
+            statusEl.className = 'status-info';
+            
+            if (isGameStartingSoon(game)) {
+                statusEl.textContent = '⚠️ 即将开始（30分钟内）';
+                statusEl.classList.add('urgent');
+            } else if (new Date(game.startTime) <= new Date()) {
+                statusEl.textContent = '✅ 正在进行中';
+                statusEl.classList.add('ongoing');
+            } else {
+                statusEl.textContent = '⏳ 即将开始';
+                statusEl.classList.add('upcoming');
+            }
+
+            // 判断是否显示删除按钮（只有当前用户创建的球局才显示）
+            const deleteBtn = document.getElementById('deleteGameBtn');
+            const joinBtn = document.getElementById('joinGameBtn');
+            const endBtn = document.getElementById('endGameBtn');
+            
+            const isCreator = currentUser && game.organizer && 
+                (game.organizer.name === currentUser.name || 
+                 game.organizer.name === `学生 ${currentUser.studentId}`);
+            
+            if (isCreator) {
+                // 如果是创建者，显示删除按钮和结束球局按钮，隐藏加入球局按钮
+                deleteBtn.style.display = 'inline-block';
+                joinBtn.style.display = 'none';
+                endBtn.style.display = 'inline-block';
+            } else {
+                // 如果不是创建者，隐藏删除按钮和结束球局按钮，显示加入球局按钮
+                deleteBtn.style.display = 'none';
+                joinBtn.style.display = 'inline-block';
+                endBtn.style.display = 'none';
+            }
+
+            // 显示模态框
+            const modal = document.getElementById('detailModal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.style.animation = 'fadeIn 0.3s ease';
+            }
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detailModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            currentGameId = null;
+        }
+
+        function joinGame() {
+            if (!currentGameId) return;
+            
+            // 检查每日参与限制
+            if (!checkDailyParticipationLimit()) {
+                return;
+            }
+            
+            const game = games.find(g => g.id === currentGameId);
+            if (game) {
+                // 记录用户参与球局
+                recordUserParticipation(currentGameId);
+                
+                alert(`已申请加入球局：${game.title}\n\n请联系组织者：${game.contact}`);
+                // 参加球局时增加准时记录并检查勋章
+                addPunctualityRecord();
+            }
+        }
+
+        // 检查每日参与限制
+        function checkDailyParticipationLimit() {
+            const today = new Date().toDateString();
+            const userParticipation = JSON.parse(localStorage.getItem('userDailyParticipation') || '{}');
+            
+            // 检查今天是否已经参加过球局
+            if (userParticipation[today]) {
+                alert('⚠️ 防作弊提醒\n\n每人每天只能参加一个球局！\n\n您今天已经参加过球局了，请明天再来参加新的球局。\n\n这是为了确保公平竞赛和资源合理分配。');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 记录用户参与球局
+        function recordUserParticipation(gameId) {
+            const today = new Date().toDateString();
+            const userParticipation = JSON.parse(localStorage.getItem('userDailyParticipation') || '{}');
+            
+            // 记录今天参加的球局
+            userParticipation[today] = {
+                gameId: gameId,
+                timestamp: new Date().toISOString(),
+                date: today
+            };
+            
+            // 清理7天前的记录（保持数据整洁）
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            Object.keys(userParticipation).forEach(date => {
+                if (new Date(date) < sevenDaysAgo) {
+                    delete userParticipation[date];
+                }
+            });
+            
+            localStorage.setItem('userDailyParticipation', JSON.stringify(userParticipation));
+        }
+
+        function endGame() {
+            if (!currentGameId) return;
+            
+            const game = games.find(g => g.id === currentGameId);
+            if (game) {
+                // 确认结束球局
+                if (confirm(`确定要结束球局"${game.title}"吗？\n\n结束后将跳转到结算页面。`)) {
+                    // 关闭详情页模态框
+                    closeDetailModal();
+                    
+                    // 跳转到结算页面
+                    window.location.href = 'game-settlement.html';
+                }
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('createGameForm').reset();
+            document.getElementById('uploadedVideos').innerHTML = '';
+        }
+
+        // 视频上传处理
+        document.getElementById('videoUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const uploadedVideos = document.getElementById('uploadedVideos');
+            
+            if (files.length > 3) {
+                alert('最多只能上传3个视频文件');
+                return;
+            }
+            
+            uploadedVideos.innerHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 100 * 1024 * 1024) {
+                    alert(`文件 ${file.name} 超过100MB限制`);
+                    continue;
+                }
+                
+                const videoPreview = document.createElement('div');
+                videoPreview.className = 'video-preview';
+                videoPreview.innerHTML = `
+                    <span>📹 ${file.name}</span>
+                    <span style="color: #666; font-size: 0.9rem;">(${(file.size / 1024 / 1024).toFixed(1)}MB)</span>
+                `;
+                uploadedVideos.appendChild(videoPreview);
+            }
+        });
+
+        // 表单提交处理
+        document.getElementById('createGameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 检查用户是否已认证
+            if (!currentUser) {
+                alert('请先完成学校认证才能创建球局');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            const phone = document.getElementById('phoneNumber').value;
+            const wechat = document.getElementById('wechat').value;
+            const qq = document.getElementById('qq').value;
+            const shuttlecockName = document.getElementById('shuttlecockName').value;
+            const shuttlecockPrice = document.getElementById('shuttlecockPrice').value;
+            
+            // 验证联系方式
+            if (!wechat && !qq) {
+                alert('请至少填写微信号或QQ号中的一项');
+                return;
+            }
+            
+            // 验证视频数量
+            const videoFiles = document.getElementById('videoUpload').files;
+            if (videoFiles.length === 0) {
+                alert('请至少上传1段打球视频');
+                return;
+            }
+            
+            // 获取时间设置
+            const timeType = document.querySelector('input[name="timeType"]:checked').value;
+            let timeInfo = '';
+            
+            if (timeType === 'temporary') {
+                const selectedWeekdays = Array.from(document.getElementById('weekday').selectedOptions).map(option => option.value);
+                const selectedTimeSlots = Array.from(document.getElementById('timeSlot').selectedOptions).map(option => option.value);
+                
+                if (selectedWeekdays.length === 0 || selectedTimeSlots.length === 0) {
+                    alert('请选择星期和时间段');
+                    return;
+                }
+                
+                timeInfo = `临时 - ${selectedWeekdays.join('、')} ${selectedTimeSlots.join('、')}`;
+            } else if (timeType === 'weekly') {
+                const selectedDays = Array.from(document.querySelectorAll('input[name="weeklyDays"]:checked')).map(cb => cb.value);
+                const weeklyTimeSlot = document.getElementById('weeklyTimeSlot').value;
+                
+                if (selectedDays.length === 0 || !weeklyTimeSlot) {
+                    alert('请选择星期几和时间段');
+                    return;
+                }
+                
+                timeInfo = `每周 - ${selectedDays.join('、')} ${weeklyTimeSlot}`;
+            }
+            
+            const contactInfo = `${phone}（${wechat ? '微信: ' + wechat : 'QQ: ' + qq}）`;
+            
+            const newGame = {
+                id: games.length + 1,
+                title: document.getElementById('gameTitle').value,
+                level: document.getElementById('badmintonLevel').value,
+                time: timeInfo,
+                timeType: timeType,
+                startTime: calculateStartTime(timeType === 'temporary' ? 
+                    Array.from(document.getElementById('weekday').selectedOptions)[0]?.value : 
+                    Array.from(document.querySelectorAll('input[name="weeklyDays"]:checked'))[0]?.value, 
+                    timeType === 'temporary' ? 
+                    Array.from(document.getElementById('timeSlot').selectedOptions)[0]?.value : 
+                    document.getElementById('weeklyTimeSlot').value),
+                location: document.getElementById('location').value,
+                contact: contactInfo,
+                players: parseInt(document.getElementById('playerCount').value),
+                videos: Array.from(videoFiles).map(file => file.name),
+                school: currentUser.school, // 添加学校信息
+                shuttlecockName: shuttlecockName,
+                shuttlecockPrice: shuttlecockPrice,
+                organizer: {
+                    name: currentUser.name || `学生 ${currentUser.studentId}`,
+                    rating: 4.0 // 默认评分
+                }
+            };
+            
+            games.push(newGame);
+            
+            // 同时添加到当前学校的球局数据
+            if (schoolGames[currentUser.school]) {
+                schoolGames[currentUser.school].push(newGame);
+            }
+            
+            // 保存球局数据到本地存储
+            saveGamesToStorage();
+            
+            renderGames();
+            closeCreateModal();
+            
+            // 显示成功提示
+            alert('球局创建成功！');
+            
+            // 创建球局后检查勋章
+            checkAndAwardBadges();
+        });
+
+        // 计算开始时间
+        function calculateStartTime(weekday, timeSlot) {
+            const startHour = parseInt(timeSlot.split(':')[0]);
+            const now = new Date();
+            let targetDate = new Date(now);
+            
+            switch(weekday) {
+                case '周一': targetDate.setDate(now.getDate() + (1 - now.getDay() + 7) % 7); break;
+                case '周二': targetDate.setDate(now.getDate() + (2 - now.getDay() + 7) % 7); break;
+                case '周三': targetDate.setDate(now.getDate() + (3 - now.getDay() + 7) % 7); break;
+                case '周四': targetDate.setDate(now.getDate() + (4 - now.getDay() + 7) % 7); break;
+                case '周五': targetDate.setDate(now.getDate() + (5 - now.getDay() + 7) % 7); break;
+                case '周六': targetDate.setDate(now.getDate() + (6 - now.getDay() + 7) % 7); break;
+                case '周日': targetDate.setDate(now.getDate() + (7 - now.getDay()) % 7); break;
+                case '工作日': 
+                    if (now.getDay() === 0 || now.getDay() === 6) {
+                        targetDate.setDate(now.getDate() + (1 - now.getDay() + 7) % 7);
+                    }
+                    break;
+                case '周末':
+                    if (now.getDay() >= 1 && now.getDay() <= 5) {
+                        targetDate.setDate(now.getDate() + (6 - now.getDay() + 7) % 7);
+                    }
+                    break;
+            }
+            
+            targetDate.setHours(startHour, 0, 0, 0);
+            return targetDate;
+        }
+
+
+
+        // 筛选功能
+        let filteredGames = [];
+        let isFiltered = false;
+
+        function applyFilters() {
+            const timeFilter = document.getElementById('timeFilter').value;
+            const locationFilter = document.getElementById('locationFilter').value;
+            const levelFilter = document.getElementById('levelFilter').value;
+            
+            // 只筛选当前学校的球局
+            const currentSchoolGames = currentUser ? games.filter(game => game.school === currentUser.school) : [];
+            
+            filteredGames = currentSchoolGames.filter(game => {
+                let match = true;
+                
+                // 时间筛选
+                if (timeFilter && !game.time.includes(timeFilter)) {
+                    match = false;
+                }
+                
+                // 地点筛选
+                if (locationFilter && locationFilter !== "全部地点") {
+                    // 检查地点是否包含筛选文本（不区分大小写）
+                    if (!game.location.toLowerCase().includes(locationFilter.toLowerCase())) {
+                        match = false;
+                    }
+                }
+                
+                // 水平筛选
+                if (levelFilter && game.level !== levelFilter) {
+                    match = false;
+                }
+                
+                return match;
+            });
+            
+            isFiltered = true;
+            renderFilteredGames();
+        }
+
+        function resetFilters() {
+            document.getElementById('timeFilter').value = '';
+            document.getElementById('locationFilter').value = '';
+            document.getElementById('levelFilter').value = '';
+            
+            isFiltered = false;
+            renderGames();
+        }
+
+        function renderFilteredGames() {
+            const gamesList = document.getElementById('gamesList');
+            
+            if (filteredGames.length === 0) {
+                gamesList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无符合条件的球局</h3>
+                        <p>请调整筛选条件或创建新的球局</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gamesList.innerHTML = filteredGames.map(game => {
+                const isUrgent = isGameStartingSoon(game);
+                const timeRemaining = getTimeRemaining(game);
+                
+                return `
+                <div class="game-item ${isUrgent ? 'urgent' : ''}" onclick="event.preventDefault(); openDetailModal(${game.id});">
+                    <div class="game-header">
+                        <div class="game-title">
+                            ${game.title}
+                            ${isUrgent ? '<span class="urgent-badge">即将开始</span>' : ''}
+                        </div>
+                        <div class="level-badge">${game.level}</div>
+                    </div>
+                    <div class="game-details">
+                        <div class="detail-item">
+                            <div class="detail-icon">⏰</div>
+                            <div>
+                                <strong>时间:</strong> ${game.time}
+                                ${timeRemaining ? `<br><small style="color: ${isUrgent ? '#ff5722' : '#666'}; font-weight: bold;">${timeRemaining}</small>` : ''}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">📍</div>
+                            <div><strong>地点:</strong> ${game.location}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👥</div>
+                            <div><strong>人数:</strong> ${game.players}人</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">🏸</div>
+                            <div>
+                                <strong>羽毛球信息:</strong> ${game.shuttlecockName} - ${game.shuttlecockPrice}元
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👤</div>
+                            <div>
+                                <strong>组局人:</strong> ${game.organizer.name}
+                                <div style="color: #ffa726; font-size: 0.9em;">
+                                    ${'★'.repeat(Math.floor(game.organizer.rating))}${'☆'.repeat(5 - Math.floor(game.organizer.rating))}
+                                    <span style="color: #666; margin-left: 4px;">(${game.organizer.rating}分)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ${game.videos && game.videos.length > 0 ? `
+                    <div class="videos-section">
+                        <strong>参考视频:</strong>
+                        <div class="video-list">
+                            ${game.videos.map(video => `<span class="video-item" onclick="openVideoModal('${video}', ${game.id})">${video}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="contact-info">
+                        <span class="contact-label">📞 联系方式:</span>
+                        ${game.contact}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // 修改renderGames函数以支持筛选状态和学校认证
+        function renderGames() {
+            console.log('renderGames函数被调用');
+            console.log('isFiltered:', isFiltered);
+            console.log('currentUser:', currentUser);
+            console.log('games数组:', games);
+            
+            if (isFiltered) {
+                renderFilteredGames();
+                return;
+            }
+            
+            const gamesList = document.getElementById('gamesList');
+            console.log('gamesList元素:', gamesList);
+            
+            // 只显示当前学校的球局
+            const currentSchoolGames = currentUser ? games.filter(game => game.school === currentUser.school) : [];
+            console.log('当前学校的球局:', currentSchoolGames);
+            
+            if (currentSchoolGames.length === 0) {
+                console.log('没有找到当前学校的球局，显示空状态');
+                gamesList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无球局</h3>
+                        <p>点击下方按钮创建第一个球局</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gamesList.innerHTML = currentSchoolGames.map(game => {
+                const isUrgent = isGameStartingSoon(game);
+                const timeRemaining = getTimeRemaining(game);
+                
+                return `
+                <div class="game-item ${isUrgent ? 'urgent' : ''}" onclick="event.preventDefault(); openDetailModal(${game.id});">
+                    <div class="game-header">
+                        <div class="game-title">
+                            ${game.title}
+                            ${isUrgent ? '<span class="urgent-badge">即将开始</span>' : ''}
+                        </div>
+                        <div class="level-badge">${game.level}</div>
+                    </div>
+                    <div class="game-details">
+                        <div class="detail-item">
+                            <div class="detail-icon">⏰</div>
+                            <div>
+                                <strong>时间:</strong> ${game.time}
+                                ${timeRemaining ? `<br><small style="color: ${isUrgent ? '#ff5722' : '#666'}; font-weight: bold;">${timeRemaining}</small>` : ''}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">📍</div>
+                            <div><strong>地点:</strong> ${game.location}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👥</div>
+                            <div><strong>人数:</strong> ${game.players}人</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">🏸</div>
+                            <div>
+                                <strong>羽毛球信息:</strong> ${game.shuttlecockName} - ${game.shuttlecockPrice}元
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-icon">👤</div>
+                            <div>
+                                <strong>组局人:</strong> ${game.organizer.name}
+                                <div style="color: #ffa726; font-size: 0.9em;">
+                                    ${'★'.repeat(Math.floor(game.organizer.rating))}${'☆'.repeat(5 - Math.floor(game.organizer.rating))}
+                                    <span style="color: #666; margin-left: 4px;">(${game.organizer.rating}分)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ${game.videos && game.videos.length > 0 ? `
+                    <div class="videos-section">
+                        <strong>参考视频:</strong>
+                        <div class="video-list">
+                            ${game.videos.map(video => `<span class="video-item" onclick="openVideoModal('${video}', ${game.id})">${video}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="contact-info">
+                        <span class="contact-label">📞 联系方式:</span>
+                        ${game.contact}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // 认证功能
+        let currentUser = null;
+        let schoolGames = {};
+        let games = [];
+
+        // 初始化学校球局数据
+        function initializeSchoolGames() {
+            console.log('开始初始化学校球局数据');
+            
+            // 所有985和211高校列表
+            const schools = [
+                // 985高校
+                '北京大学', '清华大学', '复旦大学', '上海交通大学', '浙江大学',
+                '南京大学', '中国科学技术大学', '哈尔滨工业大学', '西安交通大学',
+                '中国人民大学', '北京航空航天大学', '北京理工大学', '中国农业大学',
+                '北京师范大学', '中央民族大学', '南开大学', '天津大学', '大连理工大学',
+                '东北大学', '吉林大学', '同济大学', '华东师范大学', '东南大学',
+                '厦门大学', '山东大学', '中国海洋大学', '武汉大学', '华中科技大学',
+                '中南大学', '中山大学', '华南理工大学', '四川大学', '电子科技大学',
+                '重庆大学', '西北工业大学', '兰州大学', '国防科技大学',
+                
+                // 211高校
+                '北京交通大学', '北京工业大学', '北京科技大学', '北京化工大学',
+                '北京邮电大学', '北京林业大学', '北京中医药大学', '北京外国语大学',
+                '中国传媒大学', '中央财经大学', '对外经济贸易大学', '北京体育大学',
+                '中央音乐学院', '中国政法大学', '华北电力大学', '天津医科大学',
+                '河北工业大学', '太原理工大学', '内蒙古大学', '辽宁大学',
+                '大连海事大学', '延边大学', '东北师范大学', '哈尔滨工程大学',
+                '东北农业大学', '东北林业大学', '华东理工大学', '东华大学',
+                '上海外国语大学', '上海财经大学', '上海大学', '苏州大学',
+                '南京航空航天大学', '南京理工大学', '中国矿业大学', '河海大学',
+                '江南大学', '南京农业大学', '中国药科大学', '南京师范大学',
+                '安徽大学', '合肥工业大学', '福州大学', '南昌大学',
+                '中国石油大学', '郑州大学', '中国地质大学', '武汉理工大学',
+                '华中农业大学', '华中师范大学', '中南财经政法大学', '湖南师范大学',
+                '暨南大学', '华南师范大学', '广西大学', '海南大学',
+                '西南交通大学', '西南石油大学', '成都理工大学', '四川农业大学',
+                '西南财经大学', '贵州大学', '云南大学', '西北大学',
+                '西安电子科技大学', '长安大学', '陕西师范大学', '西北农林科技大学',
+                '青海大学', '宁夏大学', '新疆大学', '石河子大学'
+            ];
+            
+            schools.forEach(school => {
+                schoolGames[school] = [
+                    {
+                        id: Date.now() + Math.random(),
+                        title: `${school}羽毛球友谊赛`,
+                        level: "3级",
+                        time: "周五 19:00-21:00",
+                        location: `${school}体育馆`,
+                        players: "8",
+                        contact: "李老师 13800138000",
+                        videos: ["基础教学", "比赛技巧"],
+                        school: school,
+                        shuttlecockName: "胜利金黄1号",
+                        shuttlecockPrice: "35",
+                        organizer: {
+                            name: "李老师",
+                            rating: 4.5
+                        }
+                    },
+                    {
+                        id: Date.now() + Math.random() + 1,
+                        title: `${school}周末羽毛球活动`,
+                        level: "2级",
+                        time: "周六 14:00-16:00",
+                        location: `${school}体育馆`,
+                        players: "12",
+                        contact: "王同学 13900139000",
+                        videos: ["入门教程", "双打配合"],
+                        school: school,
+                        shuttlecockName: "尤尼克斯AS-05",
+                        shuttlecockPrice: "28",
+                        organizer: {
+                            name: "王同学",
+                            rating: 3.8
+                        }
+                    }
+                ];
+            });
+            
+            console.log('学校球局数据初始化完成，共', schools.length, '个学校');
+            console.log('schoolGames对象:', schoolGames);
+        }
+
+        // 认证验证函数
+        function authenticateUser() {
+            return true;
+        }
+
+
+        
+
+
+        // 检查本地存储中的认证信息
+        function checkStoredAuth() {
+            // 直接创建默认用户
+            currentUser = {
+                studentId: '00000000',
+                school: '中国矿业大学'
+            };
+            
+            games = schoolGames[currentUser.school] || [];
+            
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            updateSchoolInterface();
+            updateUserInfo();
+            renderGames();
+            
+            // 保存认证信息到本地存储
+            localStorage.setItem('badmintonAuth', JSON.stringify(currentUser));
+            return true;
+        }
+
+        // 学校搜索功能 - 智能搜索选择框
+        function setupSchoolSearch() {
+            const smartSchoolSearch = document.getElementById('smartSchoolSearch');
+            
+            if (smartSchoolSearch) {
+                // 添加输入验证功能
+                smartSchoolSearch.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.trim();
+                    const datalistOptions = document.getElementById('schoolOptions').options;
+                    
+                    // 查找完全匹配的学校
+                    const exactMatch = Array.from(datalistOptions).find(option => 
+                        option.value.toLowerCase() === searchTerm.toLowerCase()
+                    );
+                    
+                    if (exactMatch) {
+                        // 如果找到完全匹配的学校，验证通过
+                        smartSchoolSearch.setCustomValidity('');
+                    } else if (searchTerm) {
+                        // 如果没有找到匹配的学校，设置验证错误
+                        smartSchoolSearch.setCustomValidity('请从列表中选择有效的学校');
+                    } else {
+                        // 如果为空，清除验证错误
+                        smartSchoolSearch.setCustomValidity('');
+                    }
+                });
+                
+                // 添加焦点事件处理
+                smartSchoolSearch.addEventListener('focus', function() {
+                    smartSchoolSearch.select();
+                });
+                
+                // 添加键盘快捷键支持
+                smartSchoolSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        // 触发浏览器原生的datalist下拉显示
+                        smartSchoolSearch.click();
+                    }
+                });
+            }
+        }
+
+        // 更新学校界面显示
+        function updateSchoolInterface() {
+            if (currentUser) {
+                const schoolBadge = document.getElementById('schoolBadge');
+                const schoolWelcome = document.getElementById('schoolWelcome');
+                const schoolBackground = document.getElementById('schoolBackground');
+                
+                // 设置校徽
+                const schoolEmojis = {
+                    '清华大学': '🎓',
+                    '北京大学': '📚',
+                    '复旦大学': '🏛️',
+                    '上海交通大学': '⚓',
+                    '浙江大学': '🌳',
+                    '南京大学': '🏯',
+                    '武汉大学': '🌸',
+                    '中山大学': '🌅',
+                    '四川大学': '🐼',
+                    '西安交通大学': '🏮'
+                };
+                
+                if (schoolBadge) {
+                    schoolBadge.textContent = schoolEmojis[currentUser.school] || '🏫';
+                }
+                
+                // 设置欢迎信息
+                if (schoolWelcome) {
+                    schoolWelcome.textContent = `快来加入羽球大家庭，与同学们一起交流切磋吧~`;
+                }
+                
+                // 设置学校背景图片（使用Unsplash的不同大学风景图片）
+                const schoolBackgrounds = {
+                    '清华大学': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
+                    '北京大学': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
+                    '复旦大学': 'https://images.unsplash.com/photo-1562774053-701939374585?w=800',
+                    '上海交通大学': 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800',
+                    '浙江大学': 'https://images.unsplash.com/photo-1560785496-3c9d27877182?w=800',
+                    '南京大学': 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+                    '武汉大学': 'https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=800',
+                    '中山大学': 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+                    '四川大学': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
+                    '西安交通大学': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800'
+                };
+                
+                if (schoolBackground) {
+                    schoolBackground.style.backgroundImage = `url(${schoolBackgrounds[currentUser.school] || 'https://images.unsplash.com/photo-1562774053-701939374585?w=800'})`;
+                    schoolBackground.style.opacity = '0.15';
+                }
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded事件触发');
+            
+            try {
+                // 初始化聊天功能
+                loadChatMessagesFromStorage();
+                
+                // 尝试从本地存储加载球局数据
+                const hasStoredGames = loadGamesFromStorage();
+                
+                if (!hasStoredGames) {
+                    // 如果没有存储的数据，则初始化学校球局数据（包含默认演示球局）
+                    initializeSchoolGames();
+                    console.log('学校球局数据初始化完成');
+                    
+                    // 为当前用户设置球局数据
+                    if (currentUser && schoolGames[currentUser.school]) {
+                        games = schoolGames[currentUser.school];
+                        console.log('为当前用户设置球局数据:', games.length, '个球局');
+                    }
+                } else {
+                    console.log('已从本地存储加载球局数据');
+                }
+                
+                // 初始化时间类型切换功能
+                initializeTimeTypeToggle();
+                
+                // 创建默认用户（中国矿业大学）
+                currentUser = {
+                    studentId: '00000000',
+                    name: '默认用户',
+                    school: '中国矿业大学'
+                };
+                
+                // 保存用户信息到本地存储
+                localStorage.setItem('badmintonAuth', JSON.stringify(currentUser));
+                
+                console.log('创建默认用户:', currentUser);
+                
+                // 检查元素是否存在 - 使用正确的类选择器
+                const mainContent = document.querySelector('.main-content');
+                console.log('主内容元素:', mainContent);
+                
+                if (mainContent) {
+                    // 直接显示主界面
+                    mainContent.style.display = 'block';
+                    console.log('显示主界面');
+                    
+                    // 更新学校界面和用户信息
+                    updateSchoolInterface();
+                    updateUserInfo();
+                    console.log('界面信息更新完成');
+                    
+                    // 确保筛选状态为false，然后立即渲染球局列表
+                    isFiltered = false;
+                    renderGames();
+                    console.log('球局列表渲染完成');
+                } else {
+                    console.error('主内容元素未找到');
+                }
+                
+                // 初始化个人信息
+                const personalInfo = getPersonalInfo();
+                const personalNameEl = document.getElementById('personalName');
+                const personalRatingEl = document.getElementById('personalRating');
+                const personalSchoolEl = document.getElementById('personalSchool');
+                
+                if (personalNameEl) {
+                    personalNameEl.textContent = personalInfo.name;
+                }
+                if (personalRatingEl) {
+                    personalRatingEl.textContent = personalInfo.rating + '分';
+                }
+                if (personalSchoolEl) {
+                    personalSchoolEl.textContent = personalInfo.school;
+                }
+                
+                // 初始化勋章系统
+                if (typeof initializeBadges === 'function') {
+                    initializeBadges();
+                }
+                
+                // 每30秒检查一次球局状态，更新即将开始的球局显示
+                setInterval(function() {
+                    renderGames();
+                }, 30000);
+                
+            } catch (error) {
+                console.error('初始化过程中发生错误:', error);
+            }
+        });
+
+        // 显示主界面
+        function showMainPage() {
+            // 关闭所有可能打开的模态框
+            closeDetailModal();
+            closeCreateModal();
+            closeHistoryModal();
+            closeFriendsModal();
+            closePersonalInfoModal();
+            closeFriendProfileModal();
+            
+            // 确保主界面内容可见
+            const mainContent = document.getElementById('mainContent');
+            if (mainContent) {
+                mainContent.style.display = 'block';
+            }
+            
+            // 刷新球局列表
+            loadGames();
+        }
+
+        // 个人信息模态框功能
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'block';
+            updateProfileDisplay();
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        // 排行榜页面功能
+        function openRankingPage() {
+            window.open('ranking.html', '_blank');
+        }
+
+        function updateProfileDisplay() {
+            if (currentUser) {
+                document.getElementById('profileAvatar').textContent = '👤';
+                document.getElementById('profileName').textContent = `学生 ${currentUser.studentId}`;
+                document.getElementById('profileSchool').textContent = currentUser.school;
+                document.getElementById('profileStudentId').textContent = currentUser.studentId;
+            } else {
+                document.getElementById('profileAvatar').textContent = '👤';
+                document.getElementById('profileName').textContent = '未认证用户';
+                document.getElementById('profileSchool').textContent = '请先完成认证';
+                document.getElementById('profileStudentId').textContent = '无';
+            }
+        }
+
+        function updateUserInfo() {
+            const userAvatarEl = document.getElementById('userAvatar');
+            const userNameEl = document.getElementById('userName');
+            const userSchoolEl = document.getElementById('userSchool');
+            
+            if (currentUser) {
+                if (userAvatarEl) userAvatarEl.textContent = '👤';
+                if (userNameEl) userNameEl.textContent = `学生 ${currentUser.studentId}`;
+                if (userSchoolEl) userSchoolEl.textContent = currentUser.school;
+            } else {
+                if (userAvatarEl) userAvatarEl.textContent = '👤';
+                if (userNameEl) userNameEl.textContent = '未认证用户';
+                if (userSchoolEl) userSchoolEl.textContent = '请先完成认证';
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('badmintonAuth');
+            
+            // 切换到认证界面
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('mainContent').style.display = 'none';
+            
+            // 清空表单
+            document.getElementById('authForm').reset();
+            
+            closeProfileModal();
+        }
+
+        // 视频播放功能
+        function openVideoModal(videoName, gameId) {
+            const game = games.find(g => g.id === gameId);
+            if (!game) return;
+            
+            // 设置视频模态框内容
+            document.getElementById('videoModalTitle').textContent = '视频预览 - ' + videoName;
+            document.getElementById('videoFileName').textContent = videoName;
+            document.getElementById('videoGameTitle').textContent = game.title;
+            document.getElementById('videoOrganizerName').textContent = game.organizer ? game.organizer.name : '未知';
+            document.getElementById('videoGameLevel').textContent = game.level;
+            
+            // 显示视频模态框
+            const modal = document.getElementById('videoModal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.style.animation = 'fadeIn 0.3s ease';
+            }
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            const createModal = document.getElementById('createModal');
+            const detailModal = document.getElementById('detailModal');
+            const profileModal = document.getElementById('profileModal');
+            const videoModal = document.getElementById('videoModal');
+            
+            if (e.target === createModal) {
+                closeCreateModal();
+            }
+            
+            if (e.target === detailModal) {
+                closeDetailModal();
+            }
+            
+            if (e.target === profileModal) {
+                closeProfileModal();
+            }
+            
+            if (e.target === videoModal) {
+                closeVideoModal();
+            }
+        });
+
+        // 聊天功能相关变量和函数
+        let chatMessages = {}; // 存储每个球局的聊天记录
+        let currentChatGameId = null;
+
+        // 打开聊天模态框
+        function openChatModal() {
+            if (!currentGameId) {
+                alert('请先选择一个球局');
+                return;
+            }
+
+            if (!currentUser || !currentUser.studentId) {
+                alert('请先完成认证后再使用聊天功能');
+                return;
+            }
+
+            currentChatGameId = currentGameId;
+            const game = games.find(g => g.id === currentGameId);
+            
+            if (game) {
+                document.getElementById('chatTitle').textContent = `${game.title} - 聊天室`;
+            }
+
+            // 加载聊天记录
+            loadChatMessages();
+            
+            document.getElementById('chatModal').style.display = 'block';
+            document.getElementById('chatInput').focus();
+        }
+
+        // 关闭聊天模态框
+        function closeChatModal() {
+            document.getElementById('chatModal').style.display = 'none';
+            currentChatGameId = null;
+        }
+
+        // 加载聊天记录
+        function loadChatMessages() {
+            if (!currentChatGameId) return;
+
+            const messagesContainer = document.getElementById('chatMessages');
+            const gameMessages = chatMessages[currentChatGameId] || [];
+
+            if (gameMessages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="empty-chat">
+                        <div class="empty-chat-icon">💬</div>
+                        <p>还没有消息，开始聊天吧！</p>
+                    </div>
+                `;
+            } else {
+                messagesContainer.innerHTML = gameMessages.map(msg => createMessageHTML(msg)).join('');
+                // 滚动到底部
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // 创建消息HTML
+        function createMessageHTML(message) {
+            const isOwn = message.userId === currentUser.studentId;
+            const messageClass = isOwn ? 'message own' : 'message';
+            
+            return `
+                <div class="${messageClass}">
+                    <div class="message-avatar">${message.avatar}</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            ${escapeHtml(message.text)}
+                        </div>
+                        <div class="message-info">
+                            <span>${message.userName}</span>
+                            <span>•</span>
+                            <span>${formatTime(message.timestamp)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+            if (!currentChatGameId) return;
+            if (!currentUser || !currentUser.studentId) {
+                alert('请先完成认证');
+                return;
+            }
+
+            const message = {
+                id: Date.now(),
+                userId: currentUser.studentId,
+                userName: `学生 ${currentUser.studentId}`,
+                avatar: '👤',
+                text: text,
+                timestamp: new Date(),
+                gameId: currentChatGameId
+            };
+
+            // 添加到聊天记录
+            if (!chatMessages[currentChatGameId]) {
+                chatMessages[currentChatGameId] = [];
+            }
+            chatMessages[currentChatGameId].push(message);
+
+            // 保存到本地存储
+            saveChatMessages();
+
+            // 清空输入框
+            input.value = '';
+            
+            // 重新加载消息显示
+            loadChatMessages();
+        }
+
+        // 处理键盘事件
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // 删除球局功能
+        function deleteGame() {
+            if (!currentGameId) {
+                alert('未选择球局');
+                return;
+            }
+
+            const game = games.find(g => g.id === currentGameId);
+            if (!game) {
+                alert('球局不存在');
+                return;
+            }
+
+            // 确认删除
+            if (!confirm(`确定要删除球局"${game.title}"吗？此操作不可撤销。`)) {
+                return;
+            }
+
+            // 从games数组中删除
+            const gameIndex = games.findIndex(g => g.id === currentGameId);
+            if (gameIndex !== -1) {
+                games.splice(gameIndex, 1);
+            }
+
+            // 从schoolGames中删除
+            if (currentUser && schoolGames[currentUser.school]) {
+                const schoolGameIndex = schoolGames[currentUser.school].findIndex(g => g.id === currentGameId);
+                if (schoolGameIndex !== -1) {
+                    schoolGames[currentUser.school].splice(schoolGameIndex, 1);
+                }
+            }
+
+            // 删除相关聊天记录
+            if (chatMessages[currentGameId]) {
+                delete chatMessages[currentGameId];
+                saveChatMessages();
+            }
+
+            // 保存更新后的球局数据
+            saveGamesToStorage();
+
+            // 关闭详情页
+            closeDetailModal();
+
+            // 重新渲染球局列表
+            renderGames();
+
+            // 显示成功提示
+            alert('球局删除成功！');
+        }
+
+        // 保存聊天记录到本地存储
+        function saveChatMessages() {
+            try {
+                localStorage.setItem('badminton_chat_messages', JSON.stringify(chatMessages));
+            } catch (error) {
+                console.error('保存聊天记录失败:', error);
+            }
+        }
+
+        // 从本地存储加载聊天记录
+        function loadChatMessagesFromStorage() {
+            try {
+                const stored = localStorage.getItem('badminton_chat_messages');
+                if (stored) {
+                    chatMessages = JSON.parse(stored);
+                }
+            } catch (error) {
+                console.error('加载聊天记录失败:', error);
+                chatMessages = {};
+            }
+        }
+
+        // 保存球局数据到本地存储
+        function saveGamesToStorage() {
+            try {
+                localStorage.setItem('badminton_games', JSON.stringify(games));
+                console.log('球局数据已保存到本地存储');
+            } catch (error) {
+                console.error('保存球局数据失败:', error);
+            }
+        }
+
+        // 从本地存储加载球局数据
+        function loadGamesFromStorage() {
+            try {
+                const stored = localStorage.getItem('badminton_games');
+                if (stored) {
+                    const loadedGames = JSON.parse(stored);
+                    if (loadedGames && loadedGames.length > 0) {
+                        games = loadedGames;
+                        console.log('从本地存储加载了', games.length, '个球局');
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.error('加载球局数据失败:', error);
+            }
+            return false;
+        }
+
+        // 转义HTML字符
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) { // 1分钟内
+                return '刚刚';
+            } else if (diff < 3600000) { // 1小时内
+                return `${Math.floor(diff / 60000)}分钟前`;
+            } else if (date.toDateString() === now.toDateString()) { // 今天
+                return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) + ' ' + 
+                       date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        // 个人信息模态框功能
+        function openPersonalInfoModal() {
+            const modal = document.getElementById('personalInfoModal');
+            modal.style.display = 'block';
+            
+            // 加载当前个人信息到编辑框
+            const personalInfo = getPersonalInfo();
+            document.getElementById('editPersonalName').value = personalInfo.name;
+            document.getElementById('editPersonalRating').value = personalInfo.rating;
+            document.getElementById('editPersonalGender').value = personalInfo.gender || '';
+            document.getElementById('editPersonalAge').value = personalInfo.age || '';
+            document.getElementById('editPersonalBirthday').value = personalInfo.birthday || '';
+            document.getElementById('editPersonalSignature').value = personalInfo.signature || '';
+            
+            // 加载头像预览
+            if (personalInfo.avatar) {
+                const preview = document.getElementById('avatarPreview');
+                const previewImg = preview.querySelector('img');
+                previewImg.src = personalInfo.avatar;
+                preview.style.display = 'block';
+            } else {
+                document.getElementById('avatarPreview').style.display = 'none';
+            }
+            
+            // 更新头像显示
+            updateAvatarDisplay();
+        }
+
+        function closePersonalInfoModal() {
+            const modal = document.getElementById('personalInfoModal');
+            modal.style.display = 'none';
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                // 清除本地存储的用户信息
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('personalInfo');
+                localStorage.removeItem('gameHistory');
+                localStorage.removeItem('friends');
+                
+                // 跳转到登录页面
+                window.location.href = 'login.html';
+            }
+        }
+
+        function getPersonalInfo() {
+            // 从本地存储获取个人信息，如果没有则返回默认值
+            const saved = localStorage.getItem('personalInfo');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return {
+                name: '张三',
+                rating: '8.5',
+                gender: '',
+                age: '',
+                birthday: '',
+                signature: ''
+            };
+        }
+
+        function savePersonalInfo() {
+            const name = document.getElementById('editPersonalName').value.trim();
+            const rating = getPersonalInfo().rating; // 使用现有评分，不允许修改
+            const gender = document.getElementById('editPersonalGender').value;
+            const age = document.getElementById('editPersonalAge').value;
+            const birthday = document.getElementById('editPersonalBirthday').value;
+            const signature = document.getElementById('editPersonalSignature').value.trim();
+
+            if (!name) {
+                alert('请填写姓名');
+                return;
+            }
+
+            const personalInfo = {
+                name: name,
+                rating: rating,
+                gender: gender,
+                age: age,
+                birthday: birthday,
+                signature: signature
+            };
+
+            // 保存到本地存储
+            localStorage.setItem('personalInfo', JSON.stringify(personalInfo));
+
+            // 更新显示
+            document.getElementById('personalName').textContent = name;
+            document.getElementById('personalRating').textContent = rating + '分';
+            document.getElementById('personalGender').textContent = gender || '未设置';
+            document.getElementById('personalAge').textContent = age ? age + '岁' : '未设置';
+            document.getElementById('personalBirthday').textContent = birthday || '未设置';
+            document.getElementById('personalSignature').textContent = signature || '未设置';
+
+            alert('个人信息保存成功！');
+            closePersonalInfoModal();
+        }
+
+        // 好友模态框功能
+        function openFriendsModal() {
+            const modal = document.getElementById('friendsModal');
+            modal.style.display = 'block';
+        }
+
+        function closeFriendsModal() {
+            const modal = document.getElementById('friendsModal');
+            modal.style.display = 'none';
+        }
+
+        // 历史球局模态框功能
+        function openHistoryModal() {
+            const modal = document.getElementById('historyModal');
+            loadHistoryGames();
+            updateHistoryStats();
+            modal.style.display = 'block';
+        }
+
+        function closeHistoryModal() {
+            const modal = document.getElementById('historyModal');
+            modal.style.display = 'none';
+        }
+
+        function loadHistoryGames() {
+            const historyList = document.getElementById('historyGamesList');
+            
+            // 从localStorage获取历史球局数据
+            const historyGames = JSON.parse(localStorage.getItem('historyGames') || '[]');
+            
+            if (historyGames.length === 0) {
+                historyList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">🏸</div>
+                        <p>暂无历史球局记录</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">参与球局后，记录会显示在这里</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 按结算时间倒序排列
+            historyGames.sort((a, b) => {
+                const timeA = a.settlementData ? new Date(a.settlementData.settlementTime) : new Date(a.date || 0);
+                const timeB = b.settlementData ? new Date(b.settlementData.settlementTime) : new Date(b.date || 0);
+                return timeB - timeA;
+            });
+
+            historyList.innerHTML = historyGames.map(game => `
+                <div class="history-game-item" onclick="viewHistoryGameDetail('${game.id}')">
+                    <div class="history-game-icon">🏸</div>
+                    <div class="history-game-info">
+                        <div class="history-game-title">${game.title}</div>
+                        <div class="history-game-details">
+                            <div class="detail-row">
+                                <span class="detail-icon">⏰</span>
+                                <span>${game.time}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-icon">📍</span>
+                                <span>${game.location}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-icon">👥</span>
+                                <span>${game.players}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-icon">🏸</span>
+                                <span>${game.shuttlecockName} - ${game.shuttlecockPrice}元</span>
+                            </div>
+                            ${game.settlementData ? `
+                            <div class="detail-row settlement-info">
+                                <span class="detail-icon">💰</span>
+                                <span>人均费用: ¥${game.settlementData.perPersonCost.toFixed(2)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="history-game-date">
+                            ${game.settlementData ? 
+                                formatDate(game.settlementData.settlementTime) : 
+                                formatDate(game.date || new Date().toISOString())
+                            }
+                        </div>
+                        <div class="history-game-status">
+                            ${game.isSettled ? '已结算' : (game.status === 'completed' ? '已完成' : '进行中')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateHistoryStats() {
+            const historyGames = JSON.parse(localStorage.getItem('historyGames') || '[]');
+            
+            // 计算总参与次数
+            document.getElementById('totalGamesCount').textContent = historyGames.length;
+            
+            // 计算总运动时长
+            let totalHours = 0;
+            historyGames.forEach(game => {
+                if (game.settlementData && game.settlementData.duration) {
+                    // 如果有结算数据中的实际时长，使用实际时长
+                    totalHours += game.settlementData.duration;
+                } else {
+                    // 否则假设每局2小时
+                    totalHours += 2;
+                }
+            });
+            document.getElementById('totalPlayTime').textContent = totalHours + '小时';
+            
+            // 计算总消费金额
+            let totalCost = 0;
+            historyGames.forEach(game => {
+                if (game.settlementData && game.settlementData.perPersonCost) {
+                    // 如果有结算数据，使用人均费用
+                    totalCost += game.settlementData.perPersonCost;
+                } else if (game.cost) {
+                    // 否则使用原有的cost字段
+                    totalCost += game.cost;
+                }
+            });
+            document.getElementById('totalCost').textContent = '¥' + totalCost.toFixed(2);
+        }
+
+        function viewHistoryGameDetail(gameId) {
+            const historyGames = JSON.parse(localStorage.getItem('historyGames') || '[]');
+            const game = historyGames.find(g => g.id === gameId);
+            
+            if (!game) {
+                alert('未找到该球局信息');
+                return;
+            }
+
+            // 创建详情模态框
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h2>球局详情</h2>
+                        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="game-detail-section">
+                            <h3>基本信息</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">球局标题：</span>
+                                    <span class="detail-value">${game.title}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">水平等级：</span>
+                                    <span class="detail-value">${game.level}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">时间：</span>
+                                    <span class="detail-value">${game.time}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">地点：</span>
+                                    <span class="detail-value">${game.location}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">参与人数：</span>
+                                    <span class="detail-value">${game.players}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">羽毛球：</span>
+                                    <span class="detail-value">${game.shuttlecockName} - ${game.shuttlecockPrice}元</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">组织者：</span>
+                                    <span class="detail-value">${game.organizer} (${game.organizerRating}分)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">联系方式：</span>
+                                    <span class="detail-value">${game.contact}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${game.settlementData ? `
+                        <div class="game-detail-section">
+                            <h3>结算信息</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">场地费用：</span>
+                                    <span class="detail-value">¥${game.settlementData.venueCost.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">球费：</span>
+                                    <span class="detail-value">¥${game.settlementData.shuttlecockCost.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">总费用：</span>
+                                    <span class="detail-value">¥${game.settlementData.totalCost.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">实到人数：</span>
+                                    <span class="detail-value">${game.settlementData.actualAttendance}人</span>
+                                </div>
+                                <div class="detail-item highlight">
+                                    <span class="detail-label">人均费用：</span>
+                                    <span class="detail-value">¥${game.settlementData.perPersonCost.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">结算时间：</span>
+                                    <span class="detail-value">${formatDate(game.settlementData.settlementTime)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        ` : `
+                        <div class="game-detail-section">
+                            <p style="text-align: center; color: #666; padding: 20px;">该球局尚未结算</p>
+                        </div>
+                        `}
+                    </div>
+                    <div class="modal-footer" style="padding: 20px; border-top: 1px solid #eee; text-align: center;">
+                        <button class="rating-btn" onclick="openPostGameRating('${game.id}')" style="
+                            background: white;
+                            color: #333;
+                            border: 1px solid #ddd;
+                            padding: 12px 30px;
+                            border-radius: 25px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.4)'" 
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.3)'">
+                            ⭐ 赛后评分
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+                return '昨天';
+            } else if (diffDays <= 7) {
+                return diffDays + '天前';
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
+
+        // 打开赛后评价页面
+        function openPostGameRating(gameId) {
+            // 跳转到赛后评价页面，并传递球局ID参数
+            window.open(`post-game-rating.html?gameId=${gameId}`, '_blank');
+        }
+
+        function searchFriend() {
+            const searchTerm = document.getElementById('searchFriend').value.trim();
+            if (!searchTerm) {
+                alert('请输入搜索内容');
+                return;
+            }
+            
+            // 这里可以添加实际的搜索逻辑
+            alert('搜索功能正在开发中，搜索内容：' + searchTerm);
+        }
+
+        // 好友个人主页功能
+        function openFriendProfile(name, school, rating, badges) {
+            const modal = document.getElementById('friendProfileModal');
+            
+            // 设置好友信息
+            document.getElementById('friendProfileName').textContent = name;
+            document.getElementById('friendProfileRating').textContent = rating + '分';
+            document.getElementById('friendProfileSchool').textContent = school;
+            document.getElementById('friendProfileTitle').textContent = name + ' 的个人主页';
+            
+            // 更新勋章显示
+            updateFriendBadges(badges);
+            
+            modal.style.display = 'block';
+        }
+
+        function closeFriendProfileModal() {
+            const modal = document.getElementById('friendProfileModal');
+            modal.style.display = 'none';
+        }
+
+        function updateFriendBadges(earnedBadges) {
+            const badgeItems = document.querySelectorAll('#friendBadgesContainer .badge-item');
+            
+            badgeItems.forEach(item => {
+                const badgeType = item.getAttribute('data-badge');
+                if (earnedBadges.includes(badgeType)) {
+                    item.classList.add('earned');
+                } else {
+                    item.classList.remove('earned');
+                }
+            });
+        }
+
+        function inviteFriend(friendName) {
+            alert('已向 ' + friendName + ' 发送邀请！');
+        }
+
+        function inviteFriendFromProfile() {
+            const friendName = document.getElementById('friendProfileName').textContent;
+            alert('已向 ' + friendName + ' 发送邀请！');
+            closeFriendProfileModal();
+        }
+
+        function sendMessageToFriend() {
+            const friendName = document.getElementById('friendProfileName').textContent;
+            alert('消息功能正在开发中，将向 ' + friendName + ' 发送消息');
+        }
+
+        // 勋章系统逻辑
+        function initializeBadges() {
+            const savedBadges = localStorage.getItem('userBadges');
+            let earnedBadges = [];
+            
+            if (savedBadges) {
+                earnedBadges = JSON.parse(savedBadges);
+            } else {
+                // 默认给用户一个破冰达人勋章
+                earnedBadges = ['icebreaker'];
+                localStorage.setItem('userBadges', JSON.stringify(earnedBadges));
+            }
+            
+            updateUserBadges(earnedBadges);
+        }
+
+        function updateUserBadges(earnedBadges) {
+            const badgeItems = document.querySelectorAll('#badgesContainer .badge-item');
+            
+            badgeItems.forEach(item => {
+                const badgeType = item.getAttribute('data-badge');
+                if (earnedBadges.includes(badgeType)) {
+                    item.classList.add('earned');
+                } else {
+                    item.classList.remove('earned');
+                }
+            });
+        }
+
+        function checkAndAwardBadges() {
+            const savedBadges = localStorage.getItem('userBadges');
+            let earnedBadges = savedBadges ? JSON.parse(savedBadges) : ['icebreaker'];
+            let newBadges = [];
+            
+            // 破冰达人：首次使用应用（默认获得）
+            if (!earnedBadges.includes('icebreaker')) {
+                earnedBadges.push('icebreaker');
+                newBadges.push('破冰达人');
+            }
+            
+            // 社交达人：创建或参加3个以上球局
+            const gameCount = games.length;
+            if (gameCount >= 3 && !earnedBadges.includes('social')) {
+                earnedBadges.push('social');
+                newBadges.push('社交达人');
+            }
+            
+            // 守时之星：连续5次准时参加球局（模拟逻辑）
+            const punctualityCount = localStorage.getItem('punctualityCount') || 0;
+            if (punctualityCount >= 5 && !earnedBadges.includes('punctual')) {
+                earnedBadges.push('punctual');
+                newBadges.push('守时之星');
+            }
+            
+            // 保存更新的勋章
+            localStorage.setItem('userBadges', JSON.stringify(earnedBadges));
+            updateUserBadges(earnedBadges);
+            
+            // 显示新获得的勋章
+            if (newBadges.length > 0) {
+                alert('🎉 恭喜获得新勋章：' + newBadges.join('、') + '！');
+            }
+        }
+
+        // 增加准时记录（在参加球局时调用）
+        function addPunctualityRecord() {
+            let punctualityCount = parseInt(localStorage.getItem('punctualityCount') || 0);
+            punctualityCount++;
+            localStorage.setItem('punctualityCount', punctualityCount.toString());
+            checkAndAwardBadges();
+        }
+
+        // 初始化时间类型切换功能
+        function initializeTimeTypeToggle() {
+            const timeTypeRadios = document.querySelectorAll('input[name="timeType"]');
+            const temporarySettings = document.getElementById('temporaryTimeSettings');
+            const weeklySettings = document.getElementById('weeklyTimeSettings');
+            
+            timeTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'temporary') {
+                        temporarySettings.style.display = 'block';
+                        weeklySettings.style.display = 'none';
+                    } else if (this.value === 'weekly') {
+                        temporarySettings.style.display = 'none';
+                        weeklySettings.style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // 创建球局时检查勋章
+        function createGame() {
+            // 这个函数已被表单提交处理器替代
+            // 勋章检查逻辑已集成到表单提交处理中
+        }
+
+        // 参加球局时检查勋章
+        function joinGame() {
+            // 这个函数已被上面的joinGame函数替代
+            // 勋章检查逻辑已集成到参加球局功能中
+        }
+
+        // 头像处理功能
+        function selectAvatar() {
+            document.getElementById('avatarInput').click();
+        }
+
+        function handleAvatarChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // 验证文件类型
+                if (!file.type.startsWith('image/')) {
+                    alert('请选择图片文件！');
+                    return;
+                }
+
+                // 验证文件大小（限制为2MB）
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('图片文件大小不能超过2MB！');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarData = e.target.result;
+                    
+                    // 显示预览
+                    const preview = document.getElementById('avatarPreview');
+                    const previewImg = preview.querySelector('img');
+                    previewImg.src = avatarData;
+                    preview.style.display = 'block';
+                    
+                    // 保存头像数据到本地存储
+                    const personalInfo = getPersonalInfo();
+                    personalInfo.avatar = avatarData;
+                    localStorage.setItem('personalInfo', JSON.stringify(personalInfo));
+                    
+                    // 更新显示区域的头像
+                    updateAvatarDisplay();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeAvatar() {
+            if (confirm('确定要删除头像吗？')) {
+                // 清除预览
+                const preview = document.getElementById('avatarPreview');
+                preview.style.display = 'none';
+                
+                // 清除文件输入
+                document.getElementById('avatarInput').value = '';
+                
+                // 从本地存储中删除头像
+                const personalInfo = getPersonalInfo();
+                delete personalInfo.avatar;
+                localStorage.setItem('personalInfo', JSON.stringify(personalInfo));
+                
+                // 更新显示区域的头像
+                updateAvatarDisplay();
+            }
+        }
+
+        function updateAvatarDisplay() {
+            const personalInfo = getPersonalInfo();
+            const avatarImage = document.getElementById('avatarImage');
+            const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+            
+            if (personalInfo.avatar) {
+                avatarImage.src = personalInfo.avatar;
+                avatarImage.style.display = 'block';
+                avatarPlaceholder.style.display = 'none';
+            } else {
+                avatarImage.style.display = 'none';
+                avatarPlaceholder.style.display = 'flex';
+            }
+        }
+
+        // 页面加载时初始化个人信息 - 已合并到上面的主DOMContentLoaded事件中
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const personalModal = document.getElementById('personalInfoModal');
+            const friendsModal = document.getElementById('friendsModal');
+            const friendProfileModal = document.getElementById('friendProfileModal');
+            
+            if (event.target === personalModal) {
+                closePersonalInfoModal();
+            }
+            if (event.target === friendsModal) {
+                closeFriendsModal();
+            }
+            if (event.target === friendProfileModal) {
+                closeFriendProfileModal();
+            }
+        }
+
+    </script>
+
+    <!-- 个人信息模态框 -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">个人信息</h2>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 30px;">
+                <div class="profile-avatar" style="font-size: 80px; margin-bottom: 20px;">
+                    <span id="profileAvatar">👤</span>
+                </div>
+                <div class="profile-info" style="margin-bottom: 30px;">
+                    <h3 id="profileName" style="margin-bottom: 10px;">未认证用户</h3>
+                    <p id="profileSchool" style="color: #666; margin-bottom: 5px;">请先完成认证</p>
+                    <p id="profileStudentId" style="color: #999; font-size: 14px;">学号：无</p>
+                </div>
+                <div class="ranking-section" style="margin-bottom: 20px;">
+                    <button class="ranking-btn" onclick="openRankingPage()" style="width: 100%; padding: 12px 20px; background: white; color: #333; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.3s ease;">
+                        🏆 排行榜
+                    </button>
+                </div>
+                <div class="profile-actions" style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-primary" onclick="closeProfileModal()" style="padding: 10px 20px;">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 视频播放模态框 -->
+    <div id="videoModal" class="video-modal">
+        <div class="video-modal-content">
+            <div class="video-modal-header">
+                <h3 class="video-modal-title" id="videoModalTitle">视频预览</h3>
+                <button class="video-modal-close" onclick="closeVideoModal()">&times;</button>
+            </div>
+            <div class="video-modal-body">
+                <div class="video-placeholder">
+                    <div class="video-placeholder-icon">🎬</div>
+                    <div>视频预览功能</div>
+                    <div style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">
+                        由于这是演示版本，暂时无法播放实际视频文件
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h4 id="videoFileName">视频文件名</h4>
+                    <p><strong>所属球局:</strong> <span id="videoGameTitle"></span></p>
+                    <p><strong>组织者:</strong> <span id="videoOrganizerName"></span></p>
+                    <p><strong>水平等级:</strong> <span id="videoGameLevel"></span></p>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                        💡 提示：在实际应用中，这里会显示视频播放器，支持在线观看打球视频
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

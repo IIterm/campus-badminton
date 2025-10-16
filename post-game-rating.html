@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽毛球组局 - 赛后评价</title>
+    <link rel="stylesheet" href="common-styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', 'Inter', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .rating-container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* 球局信息卡片 */
+        .game-info-card {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .game-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .game-date {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .game-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* 玩家选择列表 */
+        .players-section {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .player-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .player-main-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .player-details h3 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .player-stats {
+            font-size: 14px;
+            color: #718096;
+            margin: 0;
+        }
+
+        .expand-toggle {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .expand-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .expand-toggle.expanded {
+            transform: rotate(180deg);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .expand-toggle::before {
+            content: '▼';
+            transition: transform 0.3s ease;
+        }
+
+        /* 评分维度 */
+        .rating-dimensions {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 2px solid #f8f9fa;
+            background: #fafbfc;
+            border-radius: 0 0 12px 12px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .rating-dimensions.expanded {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .player-card.expanded {
+            border-color: #667eea;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .player-card.expanded .rating-dimensions {
+            display: block;
+        }
+
+        .dimension-group {
+            margin-bottom: 24px;
+        }
+
+        .dimension-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dimensions-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .dimension-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #ffffff;
+            border: 2px solid #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.2s ease-out;
+        }
+
+        .dimension-item:hover {
+            border-color: #667eea;
+        }
+
+        .dimension-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .dimension-description {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* 星级评分 */
+        .star-rating {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .star {
+            font-size: 20px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            user-select: none;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .rating-text {
+            margin-left: 8px;
+            font-size: 12px;
+            color: #666;
+            min-width: 40px;
+        }
+
+        /* 评论区域 */
+        .comment-section {
+            margin-top: 20px;
+        }
+
+        .comment-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            background: #ffffff;
+            transition: all 0.2s ease-out;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.30);
+        }
+
+        .comment-input::placeholder {
+            color: #999;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* 技能标签 */
+        .skill-tags {
+            margin-top: 16px;
+        }
+
+        .tags-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .tags-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            padding: 6px 12px;
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            user-select: none;
+        }
+
+        .skill-tag:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .skill-tag.selected {
+            background: #667eea;
+            color: #ffffff;
+            border-color: #667eea;
+        }
+
+        /* 再次对战评价 */
+        .battle-again-section {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .battle-rating {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .battle-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .battle-stars {
+            display: flex;
+            gap: 6px;
+        }
+
+        .battle-star {
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            user-select: none;
+        }
+
+        .battle-star:hover {
+            color: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .battle-star.active {
+            color: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .battle-message {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 提交按钮 */
+        .submit-section {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .submit-button {
+            background: #ffffff;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 16px 48px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            min-width: 200px;
+        }
+
+        .submit-button:hover {
+            background: #f8f9ff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.20);
+        }
+
+        .submit-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.30);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 返回按钮 */
+        .back-button {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            background: #ffffff;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            z-index: 100;
+        }
+
+        .back-button:hover {
+            background: #f8f9ff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.20);
+        }
+
+        .back-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.30);
+        }
+
+        /* 确认弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .modal-content {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            border: 2px solid;
+        }
+
+        .modal-button.confirm {
+            background: #ffffff;
+            color: #667eea;
+            border-color: #667eea;
+        }
+
+        .modal-button.confirm:hover {
+            background: #f8f9ff;
+        }
+
+        .modal-button.cancel {
+            background: #f8f9fa;
+            color: #666;
+            border-color: #ddd;
+        }
+
+        .modal-button.cancel:hover {
+            background: #e9ecef;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .rating-container {
+                max-width: 100%;
+            }
+
+            .game-info-card,
+            .players-section,
+            .battle-again-section {
+                padding: 20px;
+            }
+
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .player-card {
+                padding: 16px;
+            }
+
+            .dimensions-grid {
+                gap: 8px;
+            }
+
+            .dimension-item {
+                padding: 12px;
+            }
+
+            .back-button {
+                position: static;
+                margin-bottom: 16px;
+                align-self: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .battle-rating {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .submit-button {
+                width: 100%;
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="badminton-app-v2.html" class="back-button">
+        ← 返回
+    </a>
+
+    <div class="rating-container">
+        <div class="header">
+            <h1 class="title">赛后评价</h1>
+            <p class="subtitle">为本次球局的参与者进行评价，帮助建立更好的社区氛围</p>
+        </div>
+
+        <!-- 球局信息卡片 -->
+        <div class="game-info-card">
+            <div class="game-info-header">
+                <h3 class="game-title">🏸 周末羽毛球友谊赛</h3>
+                <span class="game-date">2024年1月15日</span>
+            </div>
+            <div class="game-details">
+                <div class="detail-item">
+                    <div class="detail-label">场地</div>
+                    <div class="detail-value">体育中心A馆</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">时长</div>
+                    <div class="detail-value">2小时</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">参与人数</div>
+                    <div class="detail-value">8人</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">费用</div>
+                    <div class="detail-value">¥45/人</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 玩家选择列表 -->
+        <div class="players-section">
+            <div class="section-header">
+                <h3 class="section-title">👥 选择要评价的玩家</h3>
+            </div>
+            
+            <div class="players-grid" id="playersGrid">
+                <!-- 玩家卡片将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 评分维度（默认隐藏） -->
+            <div class="rating-dimensions" id="ratingDimensions">
+                <div class="dimension-group">
+                    <h4 class="dimension-title">⭐ 技术水平评价</h4>
+                    <div class="dimensions-grid">
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">发球技术</div>
+                                <div class="dimension-description">发球的准确性和力度</div>
+                            </div>
+                            <div class="star-rating" data-dimension="serve">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">接球反应</div>
+                                <div class="dimension-description">接球的速度和准确性</div>
+                            </div>
+                            <div class="star-rating" data-dimension="receive">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">移动步法</div>
+                                <div class="dimension-description">场上移动的灵活性</div>
+                            </div>
+                            <div class="star-rating" data-dimension="movement">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dimension-group">
+                    <h4 class="dimension-title">🤝 团队配合评价</h4>
+                    <div class="dimensions-grid">
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">沟通协调</div>
+                                <div class="dimension-description">场上的沟通和配合</div>
+                            </div>
+                            <div class="star-rating" data-dimension="communication">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">战术理解</div>
+                                <div class="dimension-description">对比赛战术的理解</div>
+                            </div>
+                            <div class="star-rating" data-dimension="tactics">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dimension-group">
+                    <h4 class="dimension-title">😊 运动礼貌评价</h4>
+                    <div class="dimensions-grid">
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">体育精神</div>
+                                <div class="dimension-description">公平竞争和尊重对手</div>
+                            </div>
+                            <div class="star-rating" data-dimension="sportsmanship">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                        <div class="dimension-item">
+                            <div>
+                                <div class="dimension-label">友好态度</div>
+                                <div class="dimension-description">与队友的友好程度</div>
+                            </div>
+                            <div class="star-rating" data-dimension="friendliness">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                                <span class="rating-text">未评分</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 评论区域 -->
+                <div class="comment-section">
+                    <label class="comment-label">💬 详细评价（可选）</label>
+                    <textarea 
+                        class="comment-input" 
+                        id="commentInput"
+                        placeholder="分享你对这位玩家的具体评价和建议..."
+                        maxlength="200"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/200
+                    </div>
+                </div>
+
+                <!-- 技能标签 -->
+                <div class="skill-tags">
+                    <div class="tags-label">🏷️ 技能标签（可多选）</div>
+                    <div class="tags-grid" id="skillTags">
+                        <span class="skill-tag" data-tag="powerful">力量型</span>
+                        <span class="skill-tag" data-tag="technical">技术型</span>
+                        <span class="skill-tag" data-tag="strategic">战术型</span>
+                        <span class="skill-tag" data-tag="stable">稳定型</span>
+                        <span class="skill-tag" data-tag="aggressive">进攻型</span>
+                        <span class="skill-tag" data-tag="defensive">防守型</span>
+                        <span class="skill-tag" data-tag="teamwork">配合佳</span>
+                        <span class="skill-tag" data-tag="leadership">领导力</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="submit-section">
+            <button class="submit-button" id="submitBtn" disabled>
+                提交评价
+            </button>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3 class="modal-title">确认提交评价</h3>
+            <div class="modal-content">
+                你确定要提交这些评价吗？提交后将无法修改。
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button confirm" id="confirmSubmit">确认提交</button>
+                <button class="modal-button cancel" id="cancelSubmit">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟玩家数据
+        const playersData = [
+            { id: 1, name: '张三', avatar: '张', level: '5级', gamesPlayed: 45 },
+            { id: 2, name: '李四', avatar: '李', level: '4级', gamesPlayed: 38 },
+            { id: 3, name: '王五', avatar: '王', level: '4级', gamesPlayed: 32 },
+            { id: 4, name: '赵六', avatar: '赵', level: '3级', gamesPlayed: 28 },
+            { id: 5, name: '钱七', avatar: '钱', level: '3级', gamesPlayed: 25 },
+            { id: 6, name: '孙八', avatar: '孙', level: '2级', gamesPlayed: 18 }
+        ];
+
+        let selectedPlayers = [];
+        let currentPlayerRatings = {};
+        let playerRatings = {}; // 存储每个玩家的评分数据
+        let battleRating = 0;
+
+        // 初始化页面
+        function initializePage() {
+            console.log('开始渲染玩家');
+            renderPlayers();
+            console.log('开始设置事件监听器');
+            setupEventListeners();
+            console.log('初始化完成');
+        }
+
+        // 渲染玩家列表
+        function renderPlayers() {
+            const container = document.getElementById('playersGrid');
+            container.innerHTML = '';
+
+            playersData.forEach(player => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                playerCard.dataset.playerId = player.id;
+                
+                playerCard.innerHTML = `
+                    <div class="player-main-info">
+                        <div class="player-info">
+                            <div class="player-avatar">${player.avatar}</div>
+                            <div class="player-details">
+                                <h3>${player.name}</h3>
+                                <p class="player-stats">${player.level} · ${player.gamesPlayed}场比赛</p>
+                            </div>
+                        </div>
+                        <button class="expand-toggle" data-player-id="${player.id}"></button>
+                    </div>
+                    <div class="rating-dimensions" id="ratingDimensions-${player.id}" style="display: none;">
+                        <div class="dimension-group">
+                            <h4 class="dimension-title">⭐ 技术水平评价</h4>
+                            <div class="dimensions-grid">
+                                <div class="dimension-item">
+                                    <div>
+                                        <div class="dimension-label">发球技术</div>
+                                        <div class="dimension-description">发球的准确性和力度</div>
+                                    </div>
+                                    <div class="star-rating" data-dimension="serve-${player.id}">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                        <span class="rating-text">未评分</span>
+                                    </div>
+                                </div>
+                                <div class="dimension-item">
+                                    <div>
+                                        <div class="dimension-label">接球反应</div>
+                                        <div class="dimension-description">接球的速度和准确性</div>
+                                    </div>
+                                    <div class="star-rating" data-dimension="receive-${player.id}">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                        <span class="rating-text">未评分</span>
+                                    </div>
+                                </div>
+                                <div class="dimension-item">
+                                    <div>
+                                        <div class="dimension-label">战术配合</div>
+                                        <div class="dimension-description">团队配合和战术执行</div>
+                                    </div>
+                                    <div class="star-rating" data-dimension="teamwork-${player.id}">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                        <span class="rating-text">未评分</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dimension-group">
+                            <h4 class="dimension-title">🎯 比赛态度评价</h4>
+                            <div class="dimensions-grid">
+                                <div class="dimension-item">
+                                    <div>
+                                        <div class="dimension-label">体育精神</div>
+                                        <div class="dimension-description">公平竞争和尊重对手</div>
+                                    </div>
+                                    <div class="star-rating" data-dimension="sportsmanship-${player.id}">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                        <span class="rating-text">未评分</span>
+                                    </div>
+                                </div>
+                                <div class="dimension-item">
+                                    <div>
+                                        <div class="dimension-label">积极性</div>
+                                        <div class="dimension-description">参与热情和努力程度</div>
+                                    </div>
+                                    <div class="star-rating" data-dimension="enthusiasm-${player.id}">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                        <span class="rating-text">未评分</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 评论区域 -->
+                        <div class="comment-section">
+                            <label class="comment-label">💬 详细评价（可选）</label>
+                            <textarea 
+                                class="comment-input" 
+                                id="commentInput-${player.id}"
+                                placeholder="分享你对这位玩家的具体评价和建议..."
+                                maxlength="200"
+                            ></textarea>
+                            <div class="char-count">
+                                <span id="charCount-${player.id}">0</span>/200
+                            </div>
+                        </div>
+
+                        <!-- 技能标签 -->
+                        <div class="skill-tags">
+                            <div class="tags-label">🏷️ 技能标签（可多选）</div>
+                            <div class="tags-grid" id="skillTags-${player.id}">
+                                <span class="skill-tag" data-tag="powerful">力量型</span>
+                                <span class="skill-tag" data-tag="technical">技术型</span>
+                                <span class="skill-tag" data-tag="strategic">战术型</span>
+                                <span class="skill-tag" data-tag="stable">稳定型</span>
+                                <span class="skill-tag" data-tag="aggressive">进攻型</span>
+                                <span class="skill-tag" data-tag="defensive">防守型</span>
+                                <span class="skill-tag" data-tag="teamwork">配合佳</span>
+                                <span class="skill-tag" data-tag="leadership">领导力</span>
+                            </div>
+                        </div>
+
+                        <!-- 再次对战意愿 -->
+                        <div class="battle-again-section">
+                            <h4 class="dimension-title">🔄 再次对战意愿</h4>
+                            <div class="battle-rating">
+                                <span class="battle-label">你愿意与 ${player.name} 再次组队吗？</span>
+                                <div class="battle-stars" id="battleStars-${player.id}">
+                                    <span class="battle-star" data-value="1" data-player-id="${player.id}">🤍</span>
+                                    <span class="battle-star" data-value="2" data-player-id="${player.id}">🤍</span>
+                                    <span class="battle-star" data-value="3" data-player-id="${player.id}">🤍</span>
+                                    <span class="battle-star" data-value="4" data-player-id="${player.id}">🤍</span>
+                                    <span class="battle-star" data-value="5" data-player-id="${player.id}">🤍</span>
+                                </div>
+                            </div>
+                            <div class="battle-message" id="battleMessage-${player.id}">
+                                请选择你对 ${player.name} 的再次对战意愿
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(playerCard);
+            });
+
+            // 为每个展开按钮添加事件监听器
+            document.querySelectorAll('.expand-toggle').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const playerId = button.dataset.playerId;
+                    togglePlayerDetails(playerId, button);
+                });
+            });
+
+            // 重新设置星级评分事件监听器
+            setupStarRatingListeners();
+        }
+
+        // 切换玩家详情显示
+        function togglePlayerDetails(playerId, button) {
+            const playerCard = button.closest('.player-card');
+            const ratingDimensions = playerCard.querySelector('.rating-dimensions');
+            
+            if (playerCard.classList.contains('expanded')) {
+                // 收起
+                playerCard.classList.remove('expanded');
+                if (ratingDimensions) {
+                    ratingDimensions.classList.remove('expanded');
+                    ratingDimensions.style.display = 'none';
+                }
+                button.style.transform = 'rotate(0deg)';
+            } else {
+                // 展开
+                playerCard.classList.add('expanded');
+                if (ratingDimensions) {
+                    ratingDimensions.classList.add('expanded');
+                    ratingDimensions.style.display = 'block';
+                }
+                button.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // 设置星级评分事件监听器
+        function setupStarRatingListeners() {
+            console.log('设置星级评分监听器开始');
+            const starRatings = document.querySelectorAll('.star-rating');
+            console.log('找到星级评分元素数量:', starRatings.length);
+            
+            starRatings.forEach(rating => {
+                const stars = rating.querySelectorAll('.star');
+                const ratingText = rating.querySelector('.rating-text');
+                const dimension = rating.dataset.dimension;
+                const playerCard = rating.closest('.player-card');
+                
+                if (!playerCard) {
+                    console.log('找不到player-card，跳过:', dimension);
+                    return; // 如果找不到player-card，跳过
+                }
+                
+                const playerId = playerCard.dataset.playerId;
+                console.log('为玩家设置星级评分监听器:', playerId, dimension);
+
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', () => {
+                        console.log('星星点击:', playerId, dimension, index + 1);
+                        setStarRating(rating, index + 1, dimension, playerId);
+                    });
+
+                    star.addEventListener('mouseenter', () => {
+                        highlightStars(rating, index + 1);
+                    });
+                });
+
+                rating.addEventListener('mouseleave', () => {
+                    const currentRating = getPlayerRating(playerId, dimension) || 0;
+                    highlightStars(rating, currentRating);
+                });
+            });
+
+            // 技能标签事件监听器 - 移到这里，因为标签是动态生成的
+            const skillTags = document.querySelectorAll('.skill-tag');
+            console.log('找到技能标签数量:', skillTags.length);
+            
+            skillTags.forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const playerCard = tag.closest('.player-card');
+                    const playerId = playerCard ? playerCard.dataset.playerId : null;
+                    console.log('技能标签点击:', playerId, tag.dataset.tag);
+                    
+                    tag.classList.toggle('selected');
+                    
+                    // 记录玩家的技能标签选择
+                    if (playerId) {
+                        if (!playerRatings[playerId]) {
+                            playerRatings[playerId] = {};
+                        }
+                        if (!playerRatings[playerId].skillTags) {
+                            playerRatings[playerId].skillTags = [];
+                        }
+                        
+                        const tagValue = tag.dataset.tag;
+                        const tagIndex = playerRatings[playerId].skillTags.indexOf(tagValue);
+                        
+                        if (tag.classList.contains('selected')) {
+                            if (tagIndex === -1) {
+                                playerRatings[playerId].skillTags.push(tagValue);
+                            }
+                        } else {
+                            if (tagIndex > -1) {
+                                playerRatings[playerId].skillTags.splice(tagIndex, 1);
+                            }
+                        }
+                    }
+                    
+                    updateSubmitButton();
+                });
+            });
+            console.log('星级评分监听器设置完成');
+        }
+
+        // 获取玩家评分
+        function getPlayerRating(playerId, dimension) {
+            if (!playerRatings[playerId]) {
+                playerRatings[playerId] = {};
+            }
+            return playerRatings[playerId][dimension] || 0;
+        }
+
+        // 设置星级评分
+        function setStarRating(ratingElement, rating, dimension, playerId) {
+            if (!playerRatings[playerId]) {
+                playerRatings[playerId] = {};
+            }
+            playerRatings[playerId][dimension] = rating;
+            
+            highlightStars(ratingElement, rating);
+            const ratingText = ratingElement.querySelector('.rating-text');
+            const ratingLabels = ['很差', '较差', '一般', '良好', '优秀'];
+            ratingText.textContent = ratingLabels[rating - 1];
+            
+            updateSubmitButton();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            console.log('设置事件监听器开始');
+            // 再次对战评分 - 为每个玩家的battle-star添加事件监听器
+            const battleStars = document.querySelectorAll('.battle-star');
+            console.log('找到battle-star数量:', battleStars.length);
+            
+            battleStars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const playerId = star.dataset.playerId;
+                    const rating = parseInt(star.dataset.value);
+                    console.log('battle-star点击:', playerId, rating);
+                    setBattleRating(playerId, rating);
+                });
+            });
+
+            // 评论输入 - 为每个玩家的评论输入添加事件监听器
+            document.querySelectorAll('[id^="commentInput-"]').forEach(commentInput => {
+                commentInput.addEventListener('input', () => {
+                    const playerId = commentInput.id.split('-')[1];
+                    const charCount = document.getElementById(`charCount-${playerId}`);
+                    if (charCount) {
+                        charCount.textContent = commentInput.value.length;
+                    }
+                    updateSubmitButton();
+                });
+            });
+
+            // 提交按钮
+            document.getElementById('submitBtn').addEventListener('click', showConfirmModal);
+
+            // 确认弹窗
+            document.getElementById('confirmSubmit').addEventListener('click', submitRating);
+            document.getElementById('cancelSubmit').addEventListener('click', hideConfirmModal);
+            console.log('事件监听器设置完成');
+        }
+
+        // 切换玩家选择
+        function togglePlayerSelection(playerId) {
+            const playerCard = document.querySelector(`[data-player-id="${playerId}"]`);
+            const index = selectedPlayers.indexOf(playerId);
+
+            if (index > -1) {
+                selectedPlayers.splice(index, 1);
+                playerCard.classList.remove('selected');
+            } else {
+                selectedPlayers.push(playerId);
+                playerCard.classList.add('selected');
+            }
+
+            updateSubmitButton();
+        }
+
+        // 高亮星星
+        function highlightStars(ratingElement, count) {
+            const stars = ratingElement.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < count) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // 设置再次对战评分
+        function setBattleRating(playerId, value) {
+            // 初始化玩家评分数据
+            if (!playerRatings[playerId]) {
+                playerRatings[playerId] = {};
+            }
+            playerRatings[playerId].battleRating = value;
+            
+            // 更新对应玩家的battle-star显示
+            const battleStars = document.querySelectorAll(`[data-player-id="${playerId}"].battle-star`);
+            const battleMessage = document.getElementById(`battleMessage-${playerId}`);
+            
+            battleStars.forEach((star, index) => {
+                if (index < value) {
+                    star.textContent = '❤️';
+                    star.classList.add('active');
+                } else {
+                    star.textContent = '🤍';
+                    star.classList.remove('active');
+                }
+            });
+
+            const messages = [
+                '不太愿意再次组队',
+                '可能会考虑再次组队',
+                '愿意再次组队',
+                '很愿意再次组队',
+                '非常期待再次组队！'
+            ];
+            
+            if (battleMessage) {
+                battleMessage.textContent = messages[value - 1];
+            }
+            updateSubmitButton();
+        }
+
+        // 更新提交按钮状态
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            const hasSelectedPlayers = selectedPlayers.length > 0;
+            const hasRatings = Object.keys(playerRatings).length > 0;
+            const hasBattleRating = battleRating > 0;
+            
+            if (hasSelectedPlayers && (hasRatings || hasBattleRating)) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        // 显示确认弹窗
+        function showConfirmModal() {
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        // 隐藏确认弹窗
+        function hideConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        // 提交评价
+        function submitRating() {
+            // 收集评价数据
+            const ratingData = {
+                selectedPlayers: selectedPlayers,
+                ratings: playerRatings,
+                battleRating: battleRating,
+                comment: document.getElementById('commentInput').value,
+                skillTags: Array.from(document.querySelectorAll('.skill-tag.selected')).map(tag => tag.dataset.tag),
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('提交评价数据:', ratingData);
+
+            // 模拟提交成功
+            hideConfirmModal();
+            alert('评价提交成功！感谢你的参与。');
+            
+            // 返回主界面
+            setTimeout(() => {
+                window.location.href = 'badminton-app-v2.html';
+            }, 1000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面初始化开始');
+            initializePage();
+            console.log('页面初始化完成');
+        });
+    </script>
+</body>
+</html>
